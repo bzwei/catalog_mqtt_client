@@ -204,7 +204,7 @@ func (w *WorkUnit) overrideQueryParams(override map[string]interface{}) error {
 		}
 	}
 	for key, element := range w.parsedValues {
-		w.glog.Infof("Key:", key, "=>", "Element:", element[0])
+		w.glog.Infof("Key:%s => Element:%s", key, element[0])
 	}
 	w.parsedURL.RawQuery = w.parsedValues.Encode()
 	return nil

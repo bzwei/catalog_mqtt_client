@@ -9,23 +9,15 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/request"
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/towerapiworker"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
 )
 
-// CatalogConfig stores the config parameters for the
-// Catalog Worker
-type CatalogConfig struct {
-	Debug                 bool   // Enable extra logging
-	URL                   string // The URL to your Ansible Tower
-	Token                 string // The Token used to authenticate with Ansible Tower
-	SkipVerifyCertificate bool   // Skip Certifcate Validation
-	MQTTURL               string // The URL for MQTT Server
-	GUID                  string // The Client GUID
-}
-
 func main() {
-	startRun(os.Stdin, &DefaultRequestHandler{})
+	startRun(os.Stdin, &request.DefaultRequestHandler{})
 }
 
 func connect(clientId string, uri *url.URL) (mqtt.Client, error) {
@@ -50,9 +42,9 @@ func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
 	return opts
 }
 
-func startRun(reader io.Reader, rh RequestHandler) {
+func startRun(reader io.Reader, rh request.RequestHandler) {
 
-	config := CatalogConfig{}
+	config := common.CatalogConfig{}
 	logFileName := "/tmp/catalog_mqtt_client" + strconv.Itoa(os.Getpid()) + ".log"
 	logf, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
@@ -94,10 +86,10 @@ func startRun(reader io.Reader, rh RequestHandler) {
 	}
 
 	log.Infof("Connected to MQTT Server %s", config.MQTTURL)
-	rh.startHandlingRequests(mqttClient, &config, &DefaultAPIWorker{})
+	rh.StartHandlingRequests(mqttClient, &config, &towerapiworker.DefaultAPIWorker{})
 }
 
-func setConfig(config *CatalogConfig) {
+func setConfig(config *common.CatalogConfig) {
 	flag.StringVar(&config.Token, "token", "", "Ansible Tower token")
 	flag.StringVar(&config.URL, "url", "", "Ansible Tower URL")
 	flag.BoolVar(&config.Debug, "debug", false, "log debug messages")
@@ -114,7 +106,7 @@ func setConfig(config *CatalogConfig) {
 }
 
 // Configure the logger
-func configLogger(config *CatalogConfig, f *os.File) {
+func configLogger(config *common.CatalogConfig, f *os.File) {
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(f)
 	if config.Debug {

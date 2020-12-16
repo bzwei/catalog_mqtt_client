@@ -7,21 +7,21 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mkanoor/catalog_mqtt_client/internal/logger"
-	"github.com/mkanoor/catalog_mqtt_client/internal/tarfiles"
-	"github.com/mkanoor/catalog_mqtt_client/internal/taskupdater"
-	"github.com/mkanoor/catalog_mqtt_client/internal/upload"
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/catalogtask"
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/tarfiles"
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/upload"
 )
 
 type TarWriter struct {
 	dir       string
-	Url       string
+	task      catalogtask.CatalogTask
 	uploadUrl string
 	ctx       context.Context
 	glog      logger.Logger
 }
 
-func MakeTarWriter(ctx context.Context, url string, uploadUrl string) (*TarWriter, error) {
+func MakeTarWriter(ctx context.Context, task catalogtask.CatalogTask, uploadUrl string) (*TarWriter, error) {
 	glog := logger.GetLogger(ctx)
 	t := TarWriter{}
 	dir, err := ioutil.TempDir("", "catalog_client")
@@ -30,7 +30,7 @@ func MakeTarWriter(ctx context.Context, url string, uploadUrl string) (*TarWrite
 		return nil, err
 	}
 	t.dir = dir
-	t.Url = url
+	t.task = task
 	t.uploadUrl = uploadUrl
 	t.ctx = ctx
 	t.glog = glog
@@ -62,14 +62,13 @@ func (tw *TarWriter) Flush() error {
 		tw.glog.Errorf("Error compressing directory %s %v", tw.dir, err)
 	}
 
-	tu := taskupdater.MakeTaskUpdater(tw.ctx, tw.Url)
-	//_, err = upload.Upload(tw.uploadUrl, fname, "application/vnd.redhat.catalog.filename+tgz")
 	b, uploadErr := upload.Upload(tw.uploadUrl, fname, "application/vnd.redhat.topological-inventory.filename+tgz")
-	if uploadErr != nil {
-		tw.glog.Errorf("Error uploading file %s %v", fname, uploadErr)
-	}
 	os.RemoveAll(tw.dir)
 	os.RemoveAll(tmpdir)
+	if uploadErr != nil {
+		tw.glog.Errorf("Error uploading file %s %v", fname, uploadErr)
+		return uploadErr
+	}
 	var m map[string]interface{}
 	err = json.Unmarshal(b, &m)
 	if err != nil {
@@ -77,14 +76,17 @@ func (tw *TarWriter) Flush() error {
 		return err
 	}
 
+	var status string
 	if uploadErr == nil {
-		_, err = tu.Do("completed", "ok", &m)
+		status = "ok"
 	} else {
-		_, err = tu.Do("completed", "error", &map[string]interface{}{"message": uploadErr.Error()})
+		status = "error"
+		m = map[string]interface{}{"message": uploadErr.Error()}
 	}
+	err = tw.task.Update(map[string]interface{}{"state": "completed", "status": status, "output": &m})
 
 	if err != nil {
-		tw.glog.Errorf("Error updating task %s %v", tw.Url, err)
+		tw.glog.Errorf("Error updating task: %v", err)
 		return err
 	}
 	return nil
@@ -92,13 +94,12 @@ func (tw *TarWriter) Flush() error {
 
 func (tw *TarWriter) FlushErrors(messages []string) error {
 	os.RemoveAll(tw.dir)
-	tu := taskupdater.TaskUpdater{Url: tw.Url}
 	msg := map[string]interface{}{
-		"messages": messages,
+		"errors": messages,
 	}
-	_, err := tu.Do("completed", "error", &msg)
+	err := tw.task.Update(map[string]interface{}{"state": "completed", "status": "error", "output": &msg})
 	if err != nil {
-		tw.glog.Errorf("Error updating task %s %v", tw.Url, err)
+		tw.glog.Errorf("Error updating task: %v", err)
 		return err
 	}
 	return nil

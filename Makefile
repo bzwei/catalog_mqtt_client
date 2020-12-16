@@ -1,5 +1,4 @@
 SRC_FILES= request.go\
-	  workunit.go \
 	  main.go
 OTHER_FILES= internal/filters/filters.go \
 	     internal/artifacts/artifacts.go

@@ -38,4 +38,4 @@ clean:
 	go clean
 
 lint:
-	golint ${SRC_FILES} ${TEST_FILES}
+	golint ./...

@@ -1,4 +1,4 @@
-package main
+package towerapiworker
 
 import (
 	"bytes"
@@ -16,29 +16,30 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mkanoor/catalog_mqtt_client/internal/artifacts"
-	"github.com/mkanoor/catalog_mqtt_client/internal/filters"
-	"github.com/mkanoor/catalog_mqtt_client/internal/logger"
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/artifacts"
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/filters"
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
 )
 
 type WorkChannels struct {
-	shutdown        chan struct{}
-	errorChannel    chan string
-	dispatchChannel chan JobParam
-	finishedChannel chan bool
-	waitChannel     chan bool
-	responseChannel chan Page
+	Shutdown        chan struct{}
+	ErrorChannel    chan string
+	DispatchChannel chan common.JobParam
+	FinishedChannel chan bool
+	WaitChannel     chan bool
+	ResponseChannel chan common.Page
 }
 
 type RelatedObject struct {
 	predicate    string
 	relAttribute string
-	jobExtra     JobParam
+	jobExtra     common.JobParam
 }
 
 // WorkHandler is an interface to start a worker
 type WorkHandler interface {
-	StartWork(ctx context.Context, config *CatalogConfig, params JobParam, client *http.Client, wc WorkChannels) error
+	StartWork(ctx context.Context, config *common.CatalogConfig, params common.JobParam, client *http.Client, wc WorkChannels) error
 }
 
 // DefaultAPIWorker is struct to start a worker
@@ -47,17 +48,17 @@ type DefaultAPIWorker struct {
 
 // StartWork can be started as a go routine to start a unit of work based on a given JobParam
 // The responses are sent to the Responder's channel so that it can rely it to the Receptor
-func (aw *DefaultAPIWorker) StartWork(ctx context.Context, config *CatalogConfig, params JobParam, client *http.Client, wc WorkChannels) error {
+func (aw *DefaultAPIWorker) StartWork(ctx context.Context, config *common.CatalogConfig, params common.JobParam, client *http.Client, wc WorkChannels) error {
 	glog := logger.GetLogger(ctx)
 	glog.Info("Worker starting")
 	w := &WorkUnit{}
 	w.glog = glog
 	w.setConfig(config)
 	w.setJobParameters(params)
-	w.errorChannel = wc.errorChannel
-	w.shutdown = wc.shutdown
-	w.dispatchChannel = wc.dispatchChannel
-	w.responseChannel = wc.responseChannel
+	w.errorChannel = wc.ErrorChannel
+	w.shutdown = wc.Shutdown
+	w.dispatchChannel = wc.DispatchChannel
+	w.responseChannel = wc.ResponseChannel
 	err := w.setURL()
 	if err != nil {
 		glog.Errorf("Error %v", err)
@@ -71,26 +72,26 @@ func (aw *DefaultAPIWorker) StartWork(ctx context.Context, config *CatalogConfig
 // WorkUnit is a data struct to store a single unit of work
 type WorkUnit struct {
 	glog            logger.Logger
-	config          *CatalogConfig
+	config          *common.CatalogConfig
 	hostURL         *url.URL
 	client          *http.Client
-	input           *JobParam
+	input           *common.JobParam
 	filterValue     *filters.Value
 	parsedURL       *url.URL
 	parsedValues    url.Values
 	errorChannel    chan string
-	dispatchChannel chan JobParam
-	responseChannel chan Page
+	dispatchChannel chan common.JobParam
+	responseChannel chan common.Page
 	shutdown        chan struct{}
 	relatedObjects  []RelatedObject
 }
 
-func (w *WorkUnit) setConfig(p *CatalogConfig) {
+func (w *WorkUnit) setConfig(p *common.CatalogConfig) {
 	w.config = p
 	w.parseHost(p.URL)
 }
 
-func (w *WorkUnit) setJobParameters(data JobParam) {
+func (w *WorkUnit) setJobParameters(data common.JobParam) {
 	if data.ApplyFilter != nil {
 		fltr := filters.Value{}
 		fltr.Parse(data.ApplyFilter)
@@ -107,7 +108,7 @@ func (w *WorkUnit) setJobParameters(data JobParam) {
 	w.input = &data
 }
 
-func (w *WorkUnit) setRelatedObjects(data JobParam) {
+func (w *WorkUnit) setRelatedObjects(data common.JobParam) {
 	if data.FetchRelated != nil {
 		for _, o := range data.FetchRelated {
 			obj := o.(map[string]interface{})
@@ -295,7 +296,7 @@ func (w *WorkUnit) post() error {
 
 	if strings.ToLower(w.input.Method) == "launch" {
 		u := job["url"].(string)
-		w.dispatchChannel <- JobParam{Method: "monitor", HrefSlug: u, ApplyFilter: w.input.ApplyFilter}
+		w.dispatchChannel <- common.JobParam{Method: "monitor", HrefSlug: u, ApplyFilter: w.input.ApplyFilter}
 	}
 	return nil
 }
@@ -383,7 +384,7 @@ func (w *WorkUnit) requestRelated(jsonBody map[string]interface{}, related Relat
 			}
 			if rel, found := obj[related.relAttribute]; found {
 				url := rel.(string)
-				w.dispatchChannel <- JobParam{Method: "GET", HrefSlug: url, ApplyFilter: related.jobExtra.ApplyFilter}
+				w.dispatchChannel <- common.JobParam{Method: "GET", HrefSlug: url, ApplyFilter: related.jobExtra.ApplyFilter}
 			}
 
 		}
@@ -490,7 +491,7 @@ func (w *WorkUnit) writePage(jsonBody map[string]interface{}, fileName string) e
 		w.glog.Errorf("Error %v", err)
 		return err
 	}
-	w.responseChannel <- Page{Name: fileName, Data: b}
+	w.responseChannel <- common.Page{Name: fileName, Data: b}
 	return nil
 }
 

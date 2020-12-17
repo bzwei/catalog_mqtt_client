@@ -1,5 +1,4 @@
-SRC_FILES= request.go\
-	  main.go
+SRC_FILES= main.go
 OTHER_FILES= internal/filters/filters.go \
 	     internal/artifacts/artifacts.go
 BINARY=catalog_mqtt_client

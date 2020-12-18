@@ -2,12 +2,15 @@ package request
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/catalogtask"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/testhelper"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/towerapiworker"
 )
 
@@ -60,4 +63,21 @@ func TestProcessRequest(t *testing.T) {
 	if fh.timesCalled != 2 {
 		t.Fatalf("2 workers should have been started only %d were started", fh.timesCalled)
 	}
+}
+
+func TestMakePageWriter(t *testing.T) {
+	ctx := logger.CtxWithLoggerID(context.Background(), 123)
+	factory := defaultPageWriterFactory{}
+	metadata := map[string]string{"task_url": "testurl"}
+
+	pw, _ := factory.makePageWriter(ctx, "tar", "testurl", catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
+	pwType := fmt.Sprintf("%v", reflect.TypeOf(pw))
+	testhelper.Assert(t, "Page Writer Type", "*tarwriter.TarWriter", pwType)
+
+	pw, _ = factory.makePageWriter(ctx, "json", "testurl", catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
+	pwType = fmt.Sprintf("%v", reflect.TypeOf(pw))
+	testhelper.Assert(t, "Page Writer Type", "*jsonwriter.JSONWriter", pwType)
+
+	_, err := factory.makePageWriter(ctx, "gzip", "testurl", catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
+	testhelper.AssertErrorExists(t, "makePageWriter", err)
 }

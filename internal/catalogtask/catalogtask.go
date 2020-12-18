@@ -13,6 +13,7 @@ import (
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
 )
 
+// CatalogTask is an interface that gets or updates a catalog task
 type CatalogTask interface {
 	Get() (*common.RequestMessage, error)
 	Update(data map[string]interface{}) error
@@ -24,6 +25,7 @@ type defaultCatalogTask struct {
 	glog logger.Logger
 }
 
+// MakeCatalogTask returns a struct that implements interface CatalogTask
 func MakeCatalogTask(ctx context.Context, url string) CatalogTask {
 	glog := logger.GetLogger(ctx)
 
@@ -77,7 +79,7 @@ func (ct *defaultCatalogTask) Update(data map[string]interface{}) error {
 		ct.glog.Errorf("Error reading body %v", err)
 		return err
 	}
-	if resp.StatusCode != 204 {
+	if resp.StatusCode != http.StatusNoContent {
 		err = fmt.Errorf("Invalid HTTP Status code from post %d", resp.StatusCode)
 		ct.glog.Errorf("Error %v", err)
 		return err

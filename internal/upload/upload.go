@@ -8,11 +8,12 @@ import (
 	"net/http"
 	"net/textproto"
 	"os"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
 
-func Upload(url string, name string, contentType string) ([]byte, error) {
+func Upload(url string, name string, contentType string, metadata map[string]string) ([]byte, error) {
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	go func() {
@@ -22,7 +23,10 @@ func Upload(url string, name string, contentType string) ([]byte, error) {
 		h := make(textproto.MIMEHeader)
 		h.Set("Content-Disposition",
 			fmt.Sprintf(`form-data; name="file"; filename="%s"`, "inventory.tgz"))
-		h.Set("Content-Type", "application/vnd.redhat.topological-inventory.filename+tgz")
+		// TODO : Set the metadata when the ingress service supports it
+		// For now override the ContentType to include the task_id
+
+		h.Set("Content-Type", overrideContentType(metadata))
 		part, err := m.CreatePart(h)
 		file, err := os.Open(name)
 		if err != nil {
@@ -70,4 +74,17 @@ func Upload(url string, name string, contentType string) ([]byte, error) {
 	log.Info("Response from upload " + url + " Status " + res.Status)
 	log.Infof("Reponse from Post %s", string(body))
 	return body, nil
+}
+
+// overrideContentType inserts the task_id as part of the content tye
+// till we can get a more permanent solution to send metadata along
+// with multipart contents
+func overrideContentType(metadata map[string]string) string {
+	ct := "application/vnd.redhat.topological-inventory.filename+tgz"
+	if val, ok := metadata["task_url"]; ok {
+		parts := strings.Split(val, "/")
+		task_id := parts[len(parts)-1]
+		ct = fmt.Sprintf("application/vnd.redhat.topological-inventory.%s+tgz", task_id)
+	}
+	return ct
 }

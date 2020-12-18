@@ -36,8 +36,10 @@ func TestUpload(t *testing.T) {
 	f.Write(data)
 	f.Close()
 	defer os.Remove("testuploaddata.file")
-
-	body, err := Upload(ts.URL+"/upload", "testuploaddata.file", "")
+	metadata := map[string]string{
+		"task_url": "https://www.example.com/12345678",
+	}
+	body, err := Upload(ts.URL+"/upload", "testuploaddata.file", "", metadata)
 	if err != nil {
 		t.Error("ERROR from Upload:", err)
 	}

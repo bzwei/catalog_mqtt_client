@@ -47,7 +47,7 @@ func (pw *fakePageWriter) FlushErrors(msg []string) error    { return nil }
 
 type fakePageWriterFactory struct{}
 
-func (factory *fakePageWriterFactory) makePageWriter(ctx context.Context, format string, uploadURL string, task catalogtask.CatalogTask) (PageWriter, error) {
+func (factory *fakePageWriterFactory) makePageWriter(ctx context.Context, format string, uploadURL string, task catalogtask.CatalogTask, metadata map[string]string) (PageWriter, error) {
 	return &fakePageWriter{}, nil
 }
 

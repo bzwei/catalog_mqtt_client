@@ -19,9 +19,10 @@ type TarWriter struct {
 	uploadUrl string
 	ctx       context.Context
 	glog      logger.Logger
+	metadata  map[string]string
 }
 
-func MakeTarWriter(ctx context.Context, task catalogtask.CatalogTask, uploadUrl string) (*TarWriter, error) {
+func MakeTarWriter(ctx context.Context, task catalogtask.CatalogTask, uploadUrl string, metadata map[string]string) (*TarWriter, error) {
 	glog := logger.GetLogger(ctx)
 	t := TarWriter{}
 	dir, err := ioutil.TempDir("", "catalog_client")
@@ -34,6 +35,7 @@ func MakeTarWriter(ctx context.Context, task catalogtask.CatalogTask, uploadUrl 
 	t.uploadUrl = uploadUrl
 	t.ctx = ctx
 	t.glog = glog
+	t.metadata = metadata
 	return &t, nil
 }
 
@@ -62,7 +64,7 @@ func (tw *TarWriter) Flush() error {
 		tw.glog.Errorf("Error compressing directory %s %v", tw.dir, err)
 	}
 
-	b, uploadErr := upload.Upload(tw.uploadUrl, fname, "application/vnd.redhat.topological-inventory.filename+tgz")
+	b, uploadErr := upload.Upload(tw.uploadUrl, fname, "application/vnd.redhat.topological-inventory.filename+tgz", tw.metadata)
 	os.RemoveAll(tw.dir)
 	os.RemoveAll(tmpdir)
 	if uploadErr != nil {

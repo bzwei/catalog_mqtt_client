@@ -53,16 +53,7 @@ func startRun(reader io.Reader, rh request.RequestHandler) {
 	defer logf.Close()
 	defer log.Info("Finished Catalog Worker")
 
-	if true {
-		config.Debug = true
-		config.URL = "https://18.188.178.206"
-		config.Token = "YtzduqUqpzi41nGth1IuZryLM3CjbB"
-		config.SkipVerifyCertificate = true
-		config.MQTTURL = "mqtt://localhost:1883"
-		config.GUID = "123456789"
-	} else {
-		setConfig(&config)
-	}
+	setConfig(&config)
 
 	configLogger(&config, logf)
 	log.Infof("Config Debug: %v", config.Debug)

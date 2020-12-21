@@ -7,10 +7,11 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/catalogtask"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/testhelper"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/towerapiworker"
 )
 
@@ -72,12 +73,12 @@ func TestMakePageWriter(t *testing.T) {
 
 	pw, _ := factory.makePageWriter(ctx, "tar", "testurl", catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
 	pwType := fmt.Sprintf("%v", reflect.TypeOf(pw))
-	testhelper.Assert(t, "Page Writer Type", "*tarwriter.TarWriter", pwType)
+	assert.Equal(t, "*tarwriter.TarWriter", pwType, "Page Writer Type")
 
 	pw, _ = factory.makePageWriter(ctx, "json", "testurl", catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
 	pwType = fmt.Sprintf("%v", reflect.TypeOf(pw))
-	testhelper.Assert(t, "Page Writer Type", "*jsonwriter.JSONWriter", pwType)
+	assert.Equal(t, "*jsonwriter.JSONWriter", pwType, "Page Writer Type")
 
 	_, err := factory.makePageWriter(ctx, "gzip", "testurl", catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
-	testhelper.AssertErrorExists(t, "makePageWriter", err)
+	assert.Error(t, err, "makePageWriter")
 }

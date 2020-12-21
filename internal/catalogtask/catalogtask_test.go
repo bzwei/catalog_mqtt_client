@@ -5,11 +5,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/testhelper"
 )
 
 func toTime(str string) time.Time {
@@ -32,15 +34,15 @@ func TestGet(t *testing.T) {
 		t.Fatalf("Error parsing request data %v", err)
 	}
 
-	testhelper.Assert(t, "ID", "12345", reqMessage.ID)
-	testhelper.Assert(t, "State", "pending", reqMessage.State)
-	testhelper.Assert(t, "Status", "unknown", reqMessage.Status)
-	testhelper.Assert(t, "CreatedAt", toTime("2020-11-04T16:12:09Z"), reqMessage.CreatedAt)
-	testhelper.Assert(t, "UpdatedAt", toTime("2020-11-04T16:12:09Z"), reqMessage.UpdatedAt)
-	testhelper.Assert(t, "Input.ResponseFormat", "tar", reqMessage.Input.ResponseFormat)
-	testhelper.Assert(t, "Input.UploadURL", "/ingress/upload", reqMessage.Input.UploadURL)
-	testhelper.Assert(t, "Job.Method", "monitor", reqMessage.Input.Jobs[0].Method)
-	testhelper.Assert(t, "Job.HrefSlug", "/api/v2/jobs/7008", reqMessage.Input.Jobs[0].HrefSlug)
+	assert.Equal(t, "12345", reqMessage.ID, "ID")
+	assert.Equal(t, "pending", reqMessage.State, "State")
+	assert.Equal(t, "unknown", reqMessage.Status, "Status")
+	assert.Equal(t, toTime("2020-11-04T16:12:09Z"), reqMessage.CreatedAt, "CreateAt")
+	assert.Equal(t, toTime("2020-11-04T16:12:09Z"), reqMessage.UpdatedAt, "UpdatedAt")
+	assert.Equal(t, "tar", reqMessage.Input.ResponseFormat, "Input.ResponseFormat")
+	assert.Equal(t, "/ingress/upload", reqMessage.Input.UploadURL, "Input.UploadURL")
+	assert.Equal(t, "monitor", reqMessage.Input.Jobs[0].Method, "Job.Method")
+	assert.Equal(t, "/api/v2/jobs/7008", reqMessage.Input.Jobs[0].HrefSlug, "Job.HrefSlug")
 }
 
 func TestUpdate(t *testing.T) {
@@ -52,14 +54,18 @@ func TestUpdate(t *testing.T) {
 
 	task := MakeCatalogTask(logger.CtxWithLoggerID(context.Background(), 123), ts.URL)
 	err := task.Update(data)
-	testhelper.AssertErrorMessage(t, "Func Update", "Environmental variable X_RH_IDENTITY is not set", err)
+	if assert.Error(t, err, "Func Update") {
+		assert.True(t, strings.Contains(err.Error(), "Environmental variable X_RH_IDENTITY is not set"))
+	}
 
 	os.Setenv("X_RH_IDENTITY", "x-rh-id")
 	defer os.Unsetenv("X_RH_IDENTITY")
 	err = task.Update(data)
-	testhelper.AssertNoError(t, "Func Update", err)
+	assert.NoError(t, err, "Func Update")
 
 	retCode = http.StatusBadGateway
 	err = task.Update((data))
-	testhelper.AssertErrorMessage(t, "Func Update", "Invalid HTTP Status code", err)
+	if assert.Error(t, err, "Func Update") {
+		assert.True(t, strings.Contains(err.Error(), "Invalid HTTP Status code"))
+	}
 }

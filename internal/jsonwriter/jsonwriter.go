@@ -5,23 +5,25 @@ import (
 	"encoding/json"
 
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/catalogtask"
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
 )
 
-type JSONWriter struct {
+type jsonWriter struct {
 	task catalogtask.CatalogTask
 	glog logger.Logger
 	ctx  context.Context
 }
 
-func MakeJSONWriter(ctx context.Context, task catalogtask.CatalogTask) *JSONWriter {
+// MakeJSONWriter creates a common.PageWriter that writes and flushes JSON type data
+func MakeJSONWriter(ctx context.Context, task catalogtask.CatalogTask) common.PageWriter {
 	glog := logger.GetLogger(ctx)
 
-	return &JSONWriter{task: task, glog: glog, ctx: ctx}
+	return &jsonWriter{task: task, glog: glog, ctx: ctx}
 }
 
 // Write a Page given the name and the number of bytes to write
-func (jw *JSONWriter) Write(name string, b []byte) error {
+func (jw *jsonWriter) Write(name string, b []byte) error {
 	var m map[string]interface{}
 	err := json.Unmarshal(b, &m)
 	if err != nil {
@@ -35,7 +37,7 @@ func (jw *JSONWriter) Write(name string, b []byte) error {
 	return err
 }
 
-func (jw *JSONWriter) Flush() error {
+func (jw *jsonWriter) Flush() error {
 	err := jw.task.Update(map[string]interface{}{"state": "completed", "status": "ok"})
 	if err != nil {
 		jw.glog.Errorf("Error updating task: %v", err)
@@ -43,7 +45,7 @@ func (jw *JSONWriter) Flush() error {
 	return err
 }
 
-func (jw *JSONWriter) FlushErrors(messages []string) error {
+func (jw *jsonWriter) FlushErrors(messages []string) error {
 	msg := map[string]interface{}{
 		"messages": messages,
 	}

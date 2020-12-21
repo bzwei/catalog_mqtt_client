@@ -50,3 +50,10 @@ type Page struct {
 	Data []byte
 	Name string
 }
+
+// PageWriter is an interface that writes named page contents and flushes
+type PageWriter interface {
+	Write(name string, b []byte) error
+	Flush() error
+	FlushErrors(msg []string) error
+}

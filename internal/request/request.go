@@ -21,13 +21,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// PageWriter is an interface that writes named page contents and flushes
-type PageWriter interface {
-	Write(name string, b []byte) error
-	Flush() error
-	FlushErrors(msg []string) error
-}
-
 // Handler interface allows for easy mocking during testing
 type Handler interface {
 	StartHandlingRequests(mqttClient mqtt.Client, config *common.CatalogConfig, wh towerapiworker.WorkHandler)
@@ -84,7 +77,7 @@ func startMQTTListener(mqttClient mqtt.Client, config *common.CatalogConfig, wh 
 	}
 }
 
-func startDispatcher(ctx context.Context, config *common.CatalogConfig, wc towerapiworker.WorkChannels, pw PageWriter, wh towerapiworker.WorkHandler) {
+func startDispatcher(ctx context.Context, config *common.CatalogConfig, wc towerapiworker.WorkChannels, pw common.PageWriter, wh towerapiworker.WorkHandler) {
 	glog := logger.GetLogger(ctx)
 	done := false
 	totalCount := 0
@@ -112,13 +105,13 @@ func startDispatcher(ctx context.Context, config *common.CatalogConfig, wc tower
 }
 
 type pageWriterFactory interface {
-	makePageWriter(ctx context.Context, format string, uploadURL string, task catalogtask.CatalogTask, metadata map[string]string) (PageWriter, error)
+	makePageWriter(ctx context.Context, format string, uploadURL string, task catalogtask.CatalogTask, metadata map[string]string) (common.PageWriter, error)
 }
 
 type defaultPageWriterFactory struct{}
 
-func (factory *defaultPageWriterFactory) makePageWriter(ctx context.Context, format string, uploadURL string, task catalogtask.CatalogTask, metadata map[string]string) (PageWriter, error) {
-	var pw PageWriter
+func (factory *defaultPageWriterFactory) makePageWriter(ctx context.Context, format string, uploadURL string, task catalogtask.CatalogTask, metadata map[string]string) (common.PageWriter, error) {
+	var pw common.PageWriter
 	var err error
 	switch strings.ToLower(format) {
 	case "tar":

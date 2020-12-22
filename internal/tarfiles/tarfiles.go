@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// TarCompressDirectory compresses the whole directory into an output tar file
 func TarCompressDirectory(dir string, outfile string) error {
 
 	f, err := os.Create(outfile)

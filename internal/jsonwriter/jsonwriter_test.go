@@ -2,49 +2,60 @@ package jsonwriter
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"testing"
 
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/testhelper"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-type mockUpdate func(map[string]interface{}) error
-
-var thisMockUpdate mockUpdate
-
 type mockCatalogTask struct {
-	numUpdate int
+	mock.Mock
 }
 
-func (task *mockCatalogTask) Get() (*common.RequestMessage, error) { return nil, nil }
+func (m *mockCatalogTask) Get() (*common.RequestMessage, error) { return nil, nil }
 
-func (task *mockCatalogTask) Update(data map[string]interface{}) error {
-	task.numUpdate++
-	return thisMockUpdate(data)
+func (m *mockCatalogTask) Update(data map[string]interface{}) error {
+	m.Called(data)
+	return nil
 }
 
 func TestWrite(t *testing.T) {
-	thisMockUpdate = func(data map[string]interface{}) error {
-		// "state": "running", "status": "ok", "output": &
-		testhelper.Assert(t, "state", "running", data["state"])
-		testhelper.Assert(t, "status", "ok", data["status"])
-		output := fmt.Sprintf("%v", data["output"])
-		testhelper.Assert(t, "output", map[string]interface{}{"key1": "val1", "key2": "val2"}, output)
-		return nil
-	}
-	catalogTask := mockCatalogTask{}
-	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), 123), &catalogTask)
-	jwriter.Write("test page", []byte(`{"key1": "val1", "key2": "val2"}`))
+	task := new(mockCatalogTask)
+	task.On("Update", map[string]interface{}{"state": "running", "status": "ok", "output": &map[string]interface{}{"key1": "val1", "key2": "val2"}}).Return(nil)
+	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), 123), task)
+	err := jwriter.Write("test page", []byte(`{"key1": "val1", "key2": "val2"}`))
 
-	testhelper.Assert(t, "number of Update to be called", 1, catalogTask.numUpdate)
+	task.AssertExpectations(t)
+	assert.NoError(t, err)
+}
+
+func TestWriteError(t *testing.T) {
+	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), 123), nil)
+	err := jwriter.Write("test page", []byte(`bad{"key1": "val1", "key2": "val2"}`))
+	if assert.Error(t, err) {
+		assert.IsType(t, &json.SyntaxError{}, err)
+	}
 }
 
 func TestFlush(t *testing.T) {
+	task := new(mockCatalogTask)
+	task.On("Update", map[string]interface{}{"state": "completed", "status": "ok"}).Return(nil)
+	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), 123), task)
+	err := jwriter.Flush()
 
+	task.AssertExpectations(t)
+	assert.NoError(t, err)
 }
 
 func TestFlushError(t *testing.T) {
+	task := new(mockCatalogTask)
+	task.On("Update", map[string]interface{}{"state": "completed", "status": "error", "output": &map[string]interface{}{"errors": []string{"error 1", "error 2"}}}).Return(nil)
+	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), 123), task)
+	err := jwriter.FlushErrors([]string{"error 1", "error 2"})
 
+	task.AssertExpectations(t)
+	assert.NoError(t, err)
 }

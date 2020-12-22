@@ -73,11 +73,11 @@ func TestMakePageWriter(t *testing.T) {
 
 	pw, _ := factory.makePageWriter(ctx, "tar", "testurl", catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
 	pwType := fmt.Sprintf("%v", reflect.TypeOf(pw))
-	assert.Equal(t, "*tarwriter.TarWriter", pwType, "Page Writer Type")
+	assert.Equal(t, "*tarwriter.tarWriter", pwType, "Page Writer Type")
 
 	pw, _ = factory.makePageWriter(ctx, "json", "testurl", catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
 	pwType = fmt.Sprintf("%v", reflect.TypeOf(pw))
-	assert.Equal(t, "*jsonwriter.JSONWriter", pwType, "Page Writer Type")
+	assert.Equal(t, "*jsonwriter.jsonWriter", pwType, "Page Writer Type")
 
 	_, err := factory.makePageWriter(ctx, "gzip", "testurl", catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
 	assert.Error(t, err, "makePageWriter")

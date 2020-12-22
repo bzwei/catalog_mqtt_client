@@ -42,8 +42,7 @@ func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
 	return opts
 }
 
-func startRun(reader io.Reader, rh request.RequestHandler) {
-
+func startRun(reader io.Reader, rh request.Handler) {
 	config := common.CatalogConfig{}
 	logFileName := "/tmp/catalog_mqtt_client" + strconv.Itoa(os.Getpid()) + ".log"
 	logf, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)

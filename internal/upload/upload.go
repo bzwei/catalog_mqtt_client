@@ -13,7 +13,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Upload(url string, name string, contentType string, metadata map[string]string) ([]byte, error) {
+// Upload uploads a file with metadata to the url
+func Upload(url string, filename string, contentType string, metadata map[string]string) ([]byte, error) {
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	go func() {
@@ -28,7 +29,7 @@ func Upload(url string, name string, contentType string, metadata map[string]str
 
 		h.Set("Content-Type", overrideContentType(metadata))
 		part, err := m.CreatePart(h)
-		file, err := os.Open(name)
+		file, err := os.Open(filename)
 		if err != nil {
 			return
 		}
@@ -67,12 +68,12 @@ func Upload(url string, name string, contentType string, metadata map[string]str
 		log.Errorf("Error reading body %v", err)
 		return nil, err
 	}
-	if res.StatusCode != 202 {
+	if res.StatusCode != http.StatusAccepted {
 		err = fmt.Errorf("Upload failed %d %s", res.StatusCode, string(body))
 		return nil, err
 	}
 	log.Info("Response from upload " + url + " Status " + res.Status)
-	log.Infof("Reponse from Post %s", string(body))
+	log.Infof("Response from Post %s", string(body))
 	return body, nil
 }
 
@@ -83,8 +84,8 @@ func overrideContentType(metadata map[string]string) string {
 	ct := "application/vnd.redhat.topological-inventory.filename+tgz"
 	if val, ok := metadata["task_url"]; ok {
 		parts := strings.Split(val, "/")
-		task_id := parts[len(parts)-1]
-		ct = fmt.Sprintf("application/vnd.redhat.topological-inventory.%s+tgz", task_id)
+		taskID := parts[len(parts)-1]
+		ct = fmt.Sprintf("application/vnd.redhat.topological-inventory.%s+tgz", taskID)
 	}
 	return ct
 }

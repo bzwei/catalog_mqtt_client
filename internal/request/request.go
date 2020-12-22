@@ -21,14 +21,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// PageWriter is an interface that writes named page contents and flushes
 type PageWriter interface {
 	Write(name string, b []byte) error
 	Flush() error
 	FlushErrors(msg []string) error
 }
 
-// RequestHandler interface allows for easy mocking during testing
-type RequestHandler interface {
+// Handler interface allows for easy mocking during testing
+type Handler interface {
 	StartHandlingRequests(mqttClient mqtt.Client, config *common.CatalogConfig, wh towerapiworker.WorkHandler)
 	//parseRequest(b []byte) (*RequestMessage, error)
 }
@@ -37,7 +38,7 @@ type RequestHandler interface {
 type DefaultRequestHandler struct {
 }
 
-// getRequest get data from the Receptor via Stdin
+// StartHandlingRequests starts a MQTT listener. It will not stop until receives a system signal.
 func (drh *DefaultRequestHandler) StartHandlingRequests(mqttClient mqtt.Client, config *common.CatalogConfig, wh towerapiworker.WorkHandler) {
 	defer mqttClient.Disconnect(10)
 	sigs := make(chan os.Signal, 1)

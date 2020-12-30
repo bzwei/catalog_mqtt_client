@@ -16,6 +16,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var Version = "development"
+var Sha1 = "unknown"
+
 func main() {
 	startRun(os.Stdin, &request.DefaultRequestHandler{})
 }
@@ -55,6 +58,7 @@ func startRun(reader io.Reader, rh request.Handler) {
 	setConfig(&config)
 
 	configLogger(&config, logf)
+	log.Infof("Catalog MQTT Client version %s GIT SHA %s", Version, Sha1)
 	log.Infof("Config Debug: %v", config.Debug)
 	log.Infof("Config URL: %v", config.URL)
 	log.Infof("Config Token: %v", config.Token)

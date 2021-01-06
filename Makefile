@@ -1,3 +1,4 @@
+VERSION=0.0.1
 SRC_FILES= main.go
 OTHER_FILES= internal/filters/filters.go \
 	     internal/artifacts/artifacts.go
@@ -5,7 +6,7 @@ BINARY=catalog_mqtt_client
 .DEFAULT_GOAL := build
 
 build:
-	go build -o ${BINARY} ${SRC_FILES}
+	go build -ldflags="-X 'main.Version=${VERSION}' -X main.Sha1=`git rev-parse HEAD`" -o ${BINARY} ${SRC_FILES}
 
 test:
 	go test -v . ./...

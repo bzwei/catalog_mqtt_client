@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"net/url"
 	"os"
 	"strconv"
@@ -20,11 +19,29 @@ var Version = "development"
 var Sha1 = "unknown"
 
 func main() {
-	startRun(os.Stdin, &request.DefaultRequestHandler{})
+	var mqttURL string
+	flag.StringVar(&mqttURL, "mqtturl", "", "MQTTURL")
+	uri, err := url.Parse(mqttURL)
+	if err != nil {
+		log.Errorf("Error parsing MQTT URL %s %v", mqttURL, err)
+		return
+	}
+
+	var guid string
+	flag.StringVar(&guid, "guid", "", "Client GUID")
+	mqttClient, err := connect("tower_client_"+guid, uri)
+	if err != nil {
+		log.Errorf("Error connecting to MQTT Server %v", err)
+		return
+	}
+
+	log.Infof("Connected to MQTT Server %s", mqttURL)
+
+	startRun(mqttClient, &request.DefaultRequestHandler{})
 }
 
-func connect(clientId string, uri *url.URL) (mqtt.Client, error) {
-	opts := createClientOptions(clientId, uri)
+func connect(clientID string, uri *url.URL) (mqtt.Client, error) {
+	opts := createClientOptions(clientID, uri)
 	client := mqtt.NewClient(opts)
 	token := client.Connect()
 	for !token.WaitTimeout(3 * time.Second) {
@@ -35,17 +52,17 @@ func connect(clientId string, uri *url.URL) (mqtt.Client, error) {
 	return client, nil
 }
 
-func createClientOptions(clientId string, uri *url.URL) *mqtt.ClientOptions {
+func createClientOptions(clientID string, uri *url.URL) *mqtt.ClientOptions {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s", uri.Host))
 	opts.SetUsername(uri.User.Username())
 	password, _ := uri.User.Password()
 	opts.SetPassword(password)
-	opts.SetClientID(clientId)
+	opts.SetClientID(clientID)
 	return opts
 }
 
-func startRun(reader io.Reader, rh request.Handler) {
+func startRun(mqttClient mqtt.Client, rh request.Handler) {
 	config := common.CatalogConfig{}
 	logFileName := "/tmp/catalog_mqtt_client" + strconv.Itoa(os.Getpid()) + ".log"
 	logf, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
@@ -67,19 +84,7 @@ func startRun(reader io.Reader, rh request.Handler) {
 	log.Infof("Config GUID: %v", config.GUID)
 
 	log.Debug("Processing request")
-	uri, err := url.Parse(config.MQTTURL)
-	if err != nil {
-		log.Errorf("Error parsing MQTT URL %s %v", config.MQTTURL, err)
-		return
-	}
 
-	mqttClient, err := connect("tower_client_"+config.GUID, uri)
-	if err != nil {
-		log.Errorf("Error connecting to MQTT Server %v", err)
-		return
-	}
-
-	log.Infof("Connected to MQTT Server %s", config.MQTTURL)
 	rh.StartHandlingRequests(mqttClient, &config, &towerapiworker.DefaultAPIWorker{})
 }
 

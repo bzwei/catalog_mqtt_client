@@ -23,18 +23,24 @@ func (frh *FakeRequestHandler) StartHandlingRequests(mqttClient mqtt.Client, con
 }
 
 func TestMain(t *testing.T) {
-	os.Args = []string{"catalog_worker",
-		"--debug",
-		"--token", "gobbledygook",
-		"--guid", "guid-uuid",
-		"--url", "https://www.example.com"}
+	os.Args = []string{"catalog_worker", "--config", "./sample.conf"}
+
 	frh := &FakeRequestHandler{}
 	mqttClient := mqtt.NewClient(mqtt.NewClientOptions())
-	startRun(mqttClient, frh)
 
+	initConfig()
+	logf := configLogger()
+	startRun(makeConfig(), mqttClient, frh)
+
+	info, err := logf.Stat()
+	assert.NoError(t, err)
+	logf.Close()
+	os.Remove(info.Name())
+
+	assert.True(t, info.Size() > 0)
 	assert.True(t, frh.catalogConfig.Debug)
-	assert.Equal(t, "https://www.example.com", frh.catalogConfig.URL)
-	assert.Equal(t, "gobbledygook", frh.catalogConfig.Token)
+	assert.Equal(t, "<<Your Tower URL>>", frh.catalogConfig.URL)
+	assert.Equal(t, "<<Your Tower Token>>", frh.catalogConfig.Token)
 	assert.Equal(t, &towerapiworker.DefaultAPIWorker{}, frh.workHandler)
 	assert.Equal(t, mqttClient, frh.mqttClient)
 }

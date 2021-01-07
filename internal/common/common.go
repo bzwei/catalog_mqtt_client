@@ -25,12 +25,14 @@ type JobParam struct {
 	PagePrefix             string                 `json:"page_prefix"`
 }
 
+// RequestInput describes the struct of input attribute in RequestMessage
 type RequestInput struct {
 	ResponseFormat string     `json:"response_format"`
 	UploadURL      string     `json:"upload_url"`
 	Jobs           []JobParam `json:"jobs"`
 }
 
+// RequestMessage stores all attributes of a catalog task retrived from catalog-inventory API
 type RequestMessage struct {
 	Input     RequestInput `json:"input"`
 	CreatedAt time.Time    `json:"created_at"`
@@ -40,12 +42,14 @@ type RequestMessage struct {
 	UpdatedAt time.Time    `json:"updated_at"`
 }
 
+// MQTTMessage stores all attributes of the MQTTMessage sent by catalog-inventory API
 type MQTTMessage struct {
 	URL  string `json:"url"`
 	Kind string `json:"kind"`
 	Sent string `json:"string"`
 }
 
+// Page stores data in a page with a name
 type Page struct {
 	Data []byte
 	Name string

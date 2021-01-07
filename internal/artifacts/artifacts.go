@@ -8,7 +8,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// ExposePrefix is the prefix of all extra_vars that will be collected
 const ExposePrefix = "expose_to_cloud_redhat_com_"
+
+// MaxArtifactsBytes is the maximum size of an artifact that can be collected
 const MaxArtifactsBytes = 1024
 
 // Sanctify the JSON payload for artifacts. The attribute key in the artifacts

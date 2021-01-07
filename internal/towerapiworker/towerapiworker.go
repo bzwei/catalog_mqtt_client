@@ -22,6 +22,7 @@ import (
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
 )
 
+// WorkChannels collects all channels for communication between the api worker and client request goroutines
 type WorkChannels struct {
 	Shutdown        chan struct{}
 	ErrorChannel    chan string
@@ -31,7 +32,7 @@ type WorkChannels struct {
 	ResponseChannel chan common.Page
 }
 
-type RelatedObject struct {
+type relatedObject struct {
 	predicate    string
 	relAttribute string
 	jobExtra     common.JobParam
@@ -47,11 +48,11 @@ type DefaultAPIWorker struct {
 }
 
 // StartWork can be started as a go routine to start a unit of work based on a given JobParam
-// The responses are sent to the Responder's channel so that it can rely it to the Receptor
+// The responses are sent to the Responder's channel so that it can relay it to the Receptor
 func (aw *DefaultAPIWorker) StartWork(ctx context.Context, config *common.CatalogConfig, params common.JobParam, client *http.Client, wc WorkChannels) error {
 	glog := logger.GetLogger(ctx)
 	glog.Info("Worker starting")
-	w := &WorkUnit{}
+	w := &workUnit{}
 	w.glog = glog
 	w.setConfig(config)
 	w.setJobParameters(params)
@@ -69,8 +70,8 @@ func (aw *DefaultAPIWorker) StartWork(ctx context.Context, config *common.Catalo
 	return w.dispatch()
 }
 
-// WorkUnit is a data struct to store a single unit of work
-type WorkUnit struct {
+// workUnit is a data struct to store a single unit of work
+type workUnit struct {
 	glog            logger.Logger
 	config          *common.CatalogConfig
 	hostURL         *url.URL
@@ -83,15 +84,15 @@ type WorkUnit struct {
 	dispatchChannel chan common.JobParam
 	responseChannel chan common.Page
 	shutdown        chan struct{}
-	relatedObjects  []RelatedObject
+	relatedObjects  []relatedObject
 }
 
-func (w *WorkUnit) setConfig(p *common.CatalogConfig) {
+func (w *workUnit) setConfig(p *common.CatalogConfig) {
 	w.config = p
 	w.parseHost(p.URL)
 }
 
-func (w *WorkUnit) setJobParameters(data common.JobParam) {
+func (w *workUnit) setJobParameters(data common.JobParam) {
 	if data.ApplyFilter != nil {
 		fltr := filters.Value{}
 		fltr.Parse(data.ApplyFilter)
@@ -108,7 +109,7 @@ func (w *WorkUnit) setJobParameters(data common.JobParam) {
 	w.input = &data
 }
 
-func (w *WorkUnit) setRelatedObjects(data common.JobParam) {
+func (w *workUnit) setRelatedObjects(data common.JobParam) {
 	if data.FetchRelated != nil {
 		for _, o := range data.FetchRelated {
 			obj := o.(map[string]interface{})
@@ -117,7 +118,7 @@ func (w *WorkUnit) setRelatedObjects(data common.JobParam) {
 	}
 }
 
-func (w *WorkUnit) setClient(c *http.Client) error {
+func (w *workUnit) setClient(c *http.Client) error {
 	w.glog.Infof("Setting client %v", c)
 	if c == nil {
 		var tr *http.Transport
@@ -132,7 +133,7 @@ func (w *WorkUnit) setClient(c *http.Client) error {
 	return nil
 }
 
-func (w *WorkUnit) dispatch() error {
+func (w *workUnit) dispatch() error {
 	var err error
 	switch strings.ToLower(w.input.Method) {
 	case "get":
@@ -148,7 +149,7 @@ func (w *WorkUnit) dispatch() error {
 	return err
 }
 
-func (w *WorkUnit) setURL() error {
+func (w *workUnit) setURL() error {
 	w.glog.Info("Setting URL")
 	var err error
 	w.parsedURL, err = url.Parse(w.input.HrefSlug)
@@ -166,8 +167,8 @@ func (w *WorkUnit) setURL() error {
 	return nil
 }
 
-func (w *WorkUnit) setRelated(data map[string]interface{}) error {
-	r := RelatedObject{}
+func (w *workUnit) setRelated(data map[string]interface{}) error {
+	r := relatedObject{}
 	for key, element := range data {
 		switch v := element.(type) {
 		case string:
@@ -187,7 +188,7 @@ func (w *WorkUnit) setRelated(data map[string]interface{}) error {
 	return nil
 }
 
-func (w *WorkUnit) overrideQueryParams(override map[string]interface{}) error {
+func (w *workUnit) overrideQueryParams(override map[string]interface{}) error {
 	for key, element := range override {
 		switch v := element.(type) {
 		case int64:
@@ -211,7 +212,7 @@ func (w *WorkUnit) overrideQueryParams(override map[string]interface{}) error {
 	return nil
 }
 
-func (w *WorkUnit) parseHost(host string) error {
+func (w *workUnit) parseHost(host string) error {
 	u, err := url.Parse(host)
 	if err != nil {
 		w.glog.Errorf("Error %v", err)
@@ -221,7 +222,7 @@ func (w *WorkUnit) parseHost(host string) error {
 	return nil
 }
 
-func (w *WorkUnit) getPage() ([]byte, int, error) {
+func (w *workUnit) getPage() ([]byte, int, error) {
 	err := w.overrideQueryParams(w.input.Params)
 	if err != nil {
 		w.glog.Errorf("Error %v", err)
@@ -251,7 +252,7 @@ func (w *WorkUnit) getPage() ([]byte, int, error) {
 	return []byte(body), resp.StatusCode, nil
 }
 
-func (w *WorkUnit) validateHTTPResponse(resp *http.Response, body []byte) error {
+func (w *workUnit) validateHTTPResponse(resp *http.Response, body []byte) error {
 	if !successHTTPCode(resp.StatusCode) {
 		err := errors.New("HTTP GET call failed with " + resp.Status)
 		w.sendError(string(body), resp.StatusCode)
@@ -261,7 +262,7 @@ func (w *WorkUnit) validateHTTPResponse(resp *http.Response, body []byte) error 
 	return nil
 }
 
-func (w *WorkUnit) post() error {
+func (w *workUnit) post() error {
 	b, err := json.Marshal(w.input.Params)
 	if err != nil {
 		w.glog.Errorf("Error %v", err)
@@ -301,7 +302,7 @@ func (w *WorkUnit) post() error {
 	return nil
 }
 
-func (w *WorkUnit) writeResponse(body []byte, fileName string) (map[string]interface{}, error) {
+func (w *workUnit) writeResponse(body []byte, fileName string) (map[string]interface{}, error) {
 	jsonBody, err := w.createJSON(body)
 	if err != nil {
 		w.glog.Errorf("Error %v", err)
@@ -315,8 +316,7 @@ func (w *WorkUnit) writeResponse(body []byte, fileName string) (map[string]inter
 	return jsonBody, nil
 }
 
-func (w *WorkUnit) get() error {
-
+func (w *workUnit) get() error {
 	body, _, err := w.getPage()
 	if err != nil {
 		w.glog.Errorf("Get failed Error %v", err)
@@ -362,7 +362,7 @@ func (w *WorkUnit) get() error {
 	return nil
 }
 
-func (w *WorkUnit) requestAllRelations(jsonBody map[string]interface{}) error {
+func (w *workUnit) requestAllRelations(jsonBody map[string]interface{}) error {
 	for _, rel := range w.relatedObjects {
 		err := w.requestRelated(jsonBody, rel)
 		if err != nil {
@@ -373,7 +373,7 @@ func (w *WorkUnit) requestAllRelations(jsonBody map[string]interface{}) error {
 	return nil
 }
 
-func (w *WorkUnit) requestRelated(jsonBody map[string]interface{}, related RelatedObject) error {
+func (w *workUnit) requestRelated(jsonBody map[string]interface{}, related relatedObject) error {
 	if val, ok := jsonBody["results"]; ok {
 		for _, o := range val.([]interface{}) {
 			obj := o.(map[string]interface{})
@@ -392,8 +392,7 @@ func (w *WorkUnit) requestRelated(jsonBody map[string]interface{}, related Relat
 	return nil
 }
 
-func (w *WorkUnit) monitor() error {
-
+func (w *workUnit) monitor() error {
 	var completedStatus = []string{"successful", "failed", "error", "canceled"}
 	var allKnownStatus = []string{"new", "pending", "waiting", "running", "successful", "failed", "error", "canceled"}
 	var body []byte
@@ -424,7 +423,7 @@ func (w *WorkUnit) monitor() error {
 
 		status := v.(string)
 		if !includes(status, allKnownStatus) {
-			err = errors.New("Status: " + status + " is not one of the known status")
+			err = errors.New("Status " + status + " is not one of the known status")
 			w.sendError(err.Error(), 0)
 			w.glog.Errorf("Error %v", err)
 			return err
@@ -455,7 +454,7 @@ func includes(s string, values []string) bool {
 	return false
 }
 
-func (w *WorkUnit) createJSON(body []byte) (map[string]interface{}, error) {
+func (w *workUnit) createJSON(body []byte) (map[string]interface{}, error) {
 	var jsonBody map[string]interface{}
 	decoder := json.NewDecoder(bytes.NewReader(body))
 	decoder.UseNumber()
@@ -485,7 +484,7 @@ func (w *WorkUnit) createJSON(body []byte) (map[string]interface{}, error) {
 	return jsonBody, nil
 }
 
-func (w *WorkUnit) writePage(jsonBody map[string]interface{}, fileName string) error {
+func (w *workUnit) writePage(jsonBody map[string]interface{}, fileName string) error {
 	b, err := json.Marshal(jsonBody)
 	if err != nil {
 		w.glog.Errorf("Error %v", err)
@@ -495,8 +494,8 @@ func (w *WorkUnit) writePage(jsonBody map[string]interface{}, fileName string) e
 	return nil
 }
 
-func (w *WorkUnit) sendError(message string, httpStatus int) error {
-	s := fmt.Sprintf("URL : %s Status: %d Message: %s", w.input.HrefSlug, httpStatus, message)
+func (w *workUnit) sendError(message string, httpStatus int) error {
+	s := fmt.Sprintf("URL: %s Status: %d Message: %s", w.input.HrefSlug, httpStatus, message)
 	w.errorChannel <- s
 	return nil
 }

@@ -11,6 +11,7 @@ type CatalogConfig struct {
 	SkipVerifyCertificate bool   // Skip Certifcate Validation
 	MQTTURL               string // The URL for MQTT Server
 	GUID                  string // The Client GUID
+	GRPCPort              int    // Port number that localhost GRPC server listens on
 }
 
 // JobParam stores the single parameter set for a job

@@ -1,0 +1,17 @@
+syntax = "proto3";
+package catalog;
+option go_package = "./catalog";
+
+message Message {
+  string URL  = 1;
+  string kind = 2;
+  string sent = 3;
+}
+
+message Result {
+  bool ok = 1;
+}
+
+service CatalogService {
+  rpc Run(Message) returns (Result) {}
+}

@@ -1,0 +1,27 @@
+# Paste this on sequencediagram.org
+title Catalog MQTT General Workflow
+
+participantgroup #pink
+
+participant Ansible Tower
+participant Catalog Worker #orange
+participant MQTT Client
+end
+participantgroup #lightgreen **cloud.redhat.com **
+participant Cloud Controller
+participant Catalog API Inventory #orange
+participant Sources API
+end
+MQTT Client->Cloud Controller: Handshake
+MQTT Client->MQTT Client:Launch Catalog Worker
+Catalog Worker->MQTT Client: Register Worker
+note over Catalog Worker: SrcRef: TowerUUID\nSrcType: ansible-tower\nApplicationType: /insights/platform/catalog
+MQTT Client->Cloud Controller: Register Worker
+Cloud Controller->Sources API:Create Source
+Catalog API Inventory->Cloud Controller: Submit Work
+Cloud Controller->MQTT Client:Submit Work
+MQTT Client->Catalog Worker:Process Work
+Catalog Worker->Catalog API Inventory: Fetch Work Details
+Catalog Worker->Ansible Tower: Make REST API calls
+Catalog Worker->Catalog API Inventory: Update Work Status
+Catalog Worker->MQTT Client: Work Done (success/failure)

@@ -1,12 +1,12 @@
-# Catalog MQTT Client
+# Catalog Worker
 
-The Catalog MQTT Client runs in a vm or container and talks to an on-prem Ansible Tower. It can
+The Catalog Worker runs under the aegis of Redhat MQTT Client (yggdrasil). It can be run in a vm or container and talks to an on-prem Ansible Tower. It can
 * Collect inventory objects from Ansible Tower
 * Launch and monitor jobs on Ansible Tower.
 
-The Catalog MQTT Client subscribes to a specific topic on the cloud MQTT controller based on its
+The Redhat MQTT Client (RMC) subscribes to a specific topic on the cloud controller based on its
 unqiue guid. When a task needs to be done on the client the cloud controller sends a small message
-packet that includes the url to get the task details, a date time stamp and the kind of task.
+packet to the RMC which transfers the message to the Catalog Worker via GRPC. The message includes the url to get the task details, a date time stamp and the kind of task.
 ```json
 {
     "url": "http://cloud.redhat.com/api/catalog-inventory/v3.0/tasks/xxxx",
@@ -15,7 +15,7 @@ packet that includes the url to get the task details, a date time stamp and the 
 } 
 ```
 
-Once the client gets this message it looks at the URL and fetches the task details.
+Once the catalog worker gets this message it looks at the URL and fetches the task details.
 
 The client updates the task after it has finished processing.
 The client can either send the response directly to the task#result or it can upload a 
@@ -41,12 +41,9 @@ e.g.
     }]
 }
 ```
-# Input Parameters for Catalog MQTT Client
+# Parameters for Catalog Worker
+ The Parameters for the catalog worker are stored in /etc/yggdrasil/workers/catalog.conf
 
- 1. Debug
- 2. Tower Token
- 3. Tower URL
- 4. MQTT_URL
 
 # Task Parameters 
 |Keyword| Description | Example
@@ -74,9 +71,14 @@ The list of objects needed by catalog are
  6. Workflow Templates
  7. Workflow Template Nodes
 
+General Workflow
+
+![Alt UsingUploadService](./docs/catalog_worker.png?raw=true)
+
+
 For Inventory Collection
-![Alt UsingUploadService](cat_mqtt1.png?raw=true)
+![Alt UsingUploadService](./docs/cat_mqtt1.png?raw=true)
 
 For Single Job 
 
-![Alt DirectTaskUpdate](cat_mqtt2.png?raw=true)
+![Alt DirectTaskUpdate](./docs/cat_mqtt2.png?raw=true)

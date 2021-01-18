@@ -15,6 +15,11 @@ import (
 
 // Upload uploads a file with metadata to the url
 func Upload(url string, filename string, contentType string, metadata map[string]string) ([]byte, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, fmt.Errorf("Error opening file %s %v", filename, err)
+	}
+	defer file.Close()
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	go func() {
@@ -29,11 +34,9 @@ func Upload(url string, filename string, contentType string, metadata map[string
 
 		h.Set("Content-Type", overrideContentType(metadata))
 		part, err := m.CreatePart(h)
-		file, err := os.Open(filename)
 		if err != nil {
 			return
 		}
-		defer file.Close()
 		if _, err = io.Copy(part, file); err != nil {
 			return
 		}

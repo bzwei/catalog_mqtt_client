@@ -49,15 +49,15 @@ func main() {
 
 func initConfig() {
 	var configFilePath string
-	flag.StringVar(&configFilePath, "config", "/etc/redhat_mqtt_client/catalog.conf", "location of the config file")
+	flag.StringVar(&configFilePath, "config", "/etc/yggdrasil/workers/catalog.toml", "location of the config file")
 	flag.Parse()
 
 	dir, file := filepath.Split(configFilePath)
 	viper.SetConfigName(file)
-	viper.SetConfigType("ini")
+	viper.SetConfigType("toml")
 	viper.AddConfigPath(dir)
 	if err := viper.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("Failed to import configuration file %s", configFilePath))
+		panic(fmt.Errorf("Failed to import configuration file %s, reason %v", configFilePath, err))
 	}
 }
 

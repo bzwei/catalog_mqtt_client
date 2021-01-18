@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -46,20 +47,13 @@ func Upload(url string, filename string, contentType string, metadata map[string
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(m.FormDataContentType())
 	req.Header.Set("Content-Type", m.FormDataContentType())
-	user := os.Getenv("USER")
-	if user == "" {
-		err = fmt.Errorf("Environmental variable USER is not set")
+
+	client, err := common.MakeHTTPClient(req)
+	if err != nil {
 		return nil, err
 	}
-	password := os.Getenv("PASSWORD")
-	if user == "" {
-		err = fmt.Errorf("Environmental variable PASSWORD is not set")
-		return nil, err
-	}
-	req.SetBasicAuth(user, password)
-	client := &http.Client{}
+
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err

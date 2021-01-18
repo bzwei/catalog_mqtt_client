@@ -23,7 +23,7 @@ func (frh *FakeRequestHandler) StartHandlingRequests(mqttClient mqtt.Client, con
 }
 
 func TestMain(t *testing.T) {
-	os.Args = []string{"catalog_worker", "--config", "./sample.conf"}
+	os.Args = []string{"catalog_worker", "--config", "./testdata/catalog_sample.toml"}
 
 	frh := &FakeRequestHandler{}
 	mqttClient := mqtt.NewClient(mqtt.NewClientOptions())

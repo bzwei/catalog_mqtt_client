@@ -34,8 +34,8 @@ func (task *fakeCatalogTask) Get() (*common.RequestMessage, error) {
 		Input: common.RequestInput{
 			ResponseFormat: "tar",
 			Jobs: []common.JobParam{
-				common.JobParam{Method: "monitor", HrefSlug: "/api/v2/jobs/7008"},
-				common.JobParam{Method: "get", HrefSlug: "/api/v2/inventories/899"},
+				{Method: "monitor", HrefSlug: "/api/v2/jobs/7008"},
+				{Method: "get", HrefSlug: "/api/v2/inventories/899"},
 			},
 		},
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -54,13 +53,6 @@ func TestUpdate(t *testing.T) {
 
 	task := MakeCatalogTask(logger.CtxWithLoggerID(context.Background(), 123), ts.URL)
 	err := task.Update(data)
-	if assert.Error(t, err, "Func Update") {
-		assert.True(t, strings.Contains(err.Error(), "Environmental variable X_RH_IDENTITY is not set"))
-	}
-
-	os.Setenv("X_RH_IDENTITY", "x-rh-id")
-	defer os.Unsetenv("X_RH_IDENTITY")
-	err = task.Update(data)
 	assert.NoError(t, err, "Func Update")
 
 	retCode = http.StatusBadGateway

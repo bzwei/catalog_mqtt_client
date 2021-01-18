@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
@@ -48,23 +47,21 @@ func (ct *defaultCatalogTask) Get() (*common.RequestMessage, error) {
 
 func (ct *defaultCatalogTask) Update(data map[string]interface{}) error {
 	payload, err := json.Marshal(data)
-
 	if err != nil {
 		ct.glog.Errorf("Error Marshaling Payload %v", err)
 		return err
 	}
-	client := &http.Client{}
+
 	req, err := http.NewRequest(http.MethodPatch, ct.url, bytes.NewBuffer(payload))
 	req.Header.Set("Content-Type", "application/json")
-	xrh := os.Getenv("X_RH_IDENTITY")
-	if xrh == "" {
-		err = fmt.Errorf("Environmental variable X_RH_IDENTITY is not set")
-		ct.glog.Errorf("%v", err)
-		return err
-	}
-	req.Header.Set("x-rh-identity", xrh)
 	if err != nil {
 		ct.glog.Errorf("Error creating a new request %v", err)
+		return err
+	}
+
+	client, err := common.MakeHTTPClient(req)
+	if err != nil {
+		ct.glog.Errorf("Error creating a http client %v", err)
 		return err
 	}
 
@@ -74,6 +71,7 @@ func (ct *defaultCatalogTask) Update(data map[string]interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		ct.glog.Errorf("Error reading body %v", err)
@@ -85,21 +83,23 @@ func (ct *defaultCatalogTask) Update(data map[string]interface{}) error {
 		return err
 	}
 	ct.glog.Infof("Task Update Statue Code %d", resp.StatusCode)
-
 	ct.glog.Infof("Response from Patch %s", string(body))
 	return nil
 }
 
 func getWorkPayload(glog logger.Logger, url string) ([]byte, error) {
-	client := &http.Client{}
-	xrh := "eyJlbnRpdGxlbWVudHMiOnsiaW5zaWdodHMiOnsiaXNfZW50aXRsZWQiOnRydWUsImlzX3RyaWFsIjpmYWxzZX0sImNvc3RfbWFuYWdlbWVudCI6eyJpc19lbnRpdGxlZCI6dHJ1ZSwiaXNfdHJpYWwiOmZhbHNlfSwibWlncmF0aW9ucyI6eyJpc19lbnRpdGxlZCI6dHJ1ZSwiaXNfdHJpYWwiOmZhbHNlfSwiYW5zaWJsZSI6eyJpc19lbnRpdGxlZCI6dHJ1ZSwiaXNfdHJpYWwiOmZhbHNlfSwidXNlcl9wcmVmZXJlbmNlcyI6eyJpc19lbnRpdGxlZCI6dHJ1ZSwiaXNfdHJpYWwiOmZhbHNlfSwib3BlbnNoaWZ0Ijp7ImlzX2VudGl0bGVkIjp0cnVlLCJpc190cmlhbCI6ZmFsc2V9LCJzbWFydF9tYW5hZ2VtZW50Ijp7ImlzX2VudGl0bGVkIjp0cnVlLCJpc190cmlhbCI6ZmFsc2V9LCJzdWJzY3JpcHRpb25zIjp7ImlzX2VudGl0bGVkIjp0cnVlLCJpc190cmlhbCI6ZmFsc2V9LCJzZXR0aW5ncyI6eyJpc19lbnRpdGxlZCI6dHJ1ZSwiaXNfdHJpYWwiOmZhbHNlfX0sImlkZW50aXR5Ijp7ImludGVybmFsIjp7ImF1dGhfdGltZSI6Nzk5LCJvcmdfaWQiOiIxMTc4OTc3MiJ9LCJhY2NvdW50X251bWJlciI6IjYwODk3MTkiLCJhdXRoX3R5cGUiOiJiYXNpYy1hdXRoIiwidXNlciI6eyJpc19hY3RpdmUiOnRydWUsImxvY2FsZSI6ImVuX1VTIiwiaXNfb3JnX2FkbWluIjp0cnVlLCJ1c2VybmFtZSI6Imluc2lnaHRzLXFhIiwiZW1haWwiOiJkYWpvaG5zb0ByZWRoYXQuY29tIiwiZmlyc3RfbmFtZSI6Ikluc2lnaHRzIiwidXNlcl9pZCI6IjUxODM0Nzc2IiwibGFzdF9uYW1lIjoiUUEiLCJpc19pbnRlcm5hbCI6dHJ1ZX0sInR5cGUiOiJVc2VyIn19"
-
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		glog.Errorf("Error creating request %s %v", url, err)
 		return nil, err
 	}
-	req.Header.Add("x-rh-identity", xrh)
+
+	client, err := common.MakeHTTPClient(req)
+	if err != nil {
+		glog.Errorf("Error creating http client %v", err)
+		return nil, err
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		glog.Errorf("Error fetching request %s %v", url, err)

@@ -1,0 +1,19 @@
+[ANSIBLE_TOWER]
+token="<<Your Tower Token>>"
+url="<<Your Tower URL>>"
+verify_ssl=false
+
+[MQTT_BROKER]
+url="<<YOUR MQTT Broker>>"
+uuid="<<UUID Generated at install time>>"
+
+[AUTH]
+client_cert="/etc/pki/consumer/cert.pem"
+client_key="/etc/pki/consumer/key.pem"
+user="<<user name>>" #dev only
+password="<<user password>>" #dev only
+x_rh_identity="<<x-rh-identity>>" #dev only
+
+[logger]
+debug=true
+logfile="./catalog_mqtt_client" #log file path and name without .log extension

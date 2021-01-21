@@ -70,7 +70,11 @@ func TestWriteAndFlush(t *testing.T) {
 	ts, writerObj := shareWriteTest(t, http.StatusAccepted, `{"upload":"accepted"}`)
 	defer ts.Close()
 
-	shareFlushTest(t, writerObj, &map[string]interface{}{"upload": "accepted"}, "ok", "")
+	output := map[string]interface{}{
+		"upload": map[string]interface{}{"upload": "accepted"},
+		"sha256": "8d97f6ddad8fb21b41a2d97079fbb371e590fc5c4afb9556faa9de1ba025d84c",
+	}
+	shareFlushTest(t, writerObj, &output, "ok", "")
 }
 
 func TestUploadFailed(t *testing.T) {

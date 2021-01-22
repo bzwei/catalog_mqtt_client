@@ -1,12 +1,13 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
@@ -31,13 +32,7 @@ func main() {
 	config := makeConfig()
 
 	mqttURL := viper.GetString("MQTT_BROKER.url")
-	uri, err := url.Parse(mqttURL)
-	if err != nil {
-		log.Errorf("Error parsing MQTT URL %s %v", mqttURL, err)
-		return
-	}
-
-	mqttClient, err := connect("tower_client_"+viper.GetString("MQTT_BROKER.uuid"), uri)
+	mqttClient, err := connect("tower_client_"+viper.GetString("MQTT_BROKER.uuid"), mqttURL)
 	if err != nil {
 		log.Errorf("Error connecting to MQTT Server %v", err)
 		return
@@ -61,8 +56,8 @@ func initConfig() {
 	}
 }
 
-func connect(clientID string, uri *url.URL) (mqtt.Client, error) {
-	opts := createClientOptions(clientID, uri)
+func connect(clientID string, mqttURL string) (mqtt.Client, error) {
+	opts := createClientOptions(clientID, mqttURL)
 	client := mqtt.NewClient(opts)
 	token := client.Connect()
 	for !token.WaitTimeout(3 * time.Second) {
@@ -73,13 +68,14 @@ func connect(clientID string, uri *url.URL) (mqtt.Client, error) {
 	return client, nil
 }
 
-func createClientOptions(clientID string, uri *url.URL) *mqtt.ClientOptions {
+func createClientOptions(clientID string, mqttURL string) *mqtt.ClientOptions {
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s", uri.Host))
-	opts.SetUsername(uri.User.Username())
-	password, _ := uri.User.Password()
-	opts.SetPassword(password)
+	opts.AddBroker(mqttURL)
 	opts.SetClientID(clientID)
+	// TODO: This is for testing remove it once we dock with RHC
+	if strings.HasPrefix(mqttURL, "ssl://") {
+		opts.SetTLSConfig(&tls.Config{InsecureSkipVerify: true})
+	}
 	return opts
 }
 

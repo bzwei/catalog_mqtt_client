@@ -69,7 +69,7 @@ func (tw *tarWriter) Flush() error {
 		return err
 	}
 	fname := filepath.Join(tmpdir, "inventory.tgz")
-	err = tarfiles.TarCompressDirectory(tw.dir, fname)
+	sha, err := tarfiles.TarCompressDirectory(tw.dir, fname)
 	if err != nil {
 		tw.glog.Errorf("Error compressing directory %s %v", tw.dir, err)
 		statusErrors = append(statusErrors, "Failed to compress directory to a tar file")
@@ -92,7 +92,9 @@ func (tw *tarWriter) Flush() error {
 		return err
 	}
 
-	err = tw.task.Update(map[string]interface{}{"state": "completed", "status": "ok", "output": &m})
+	output := map[string]interface{}{"upload": m, "sha256": sha}
+
+	err = tw.task.Update(map[string]interface{}{"state": "completed", "status": "ok", "output": &output})
 
 	if err != nil {
 		tw.glog.Errorf("Error updating task: %v", err)

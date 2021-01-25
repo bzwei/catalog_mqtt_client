@@ -4,35 +4,29 @@ import (
 	"os"
 	"strings"
 	"testing"
-)
 
-func check(e error, t *testing.T) {
-	if e != nil {
-		t.Error(e)
-	}
-}
+	"github.com/stretchr/testify/assert"
+)
 
 func TestTarCompressDirectory(t *testing.T) {
 	dirName, tarName := "testtarfiles", "testtarfiles.tar.gz"
 	defer os.RemoveAll(dirName)
 	defer os.Remove(tarName)
 
-	check(os.Mkdir(dirName, 0755), t)
+	assert.NoError(t, os.Mkdir(dirName, 0755))
 
 	for _, fname := range []string{"file1", "file2"} {
 		data := []byte(strings.Repeat("na", 512))
 		f, err := os.Create(dirName + "/" + fname)
-		check(err, t)
+		assert.NoError(t, err)
 		f.Write(data)
 		f.Close()
 	}
 
-	check(TarCompressDirectory(dirName, tarName), t)
+	sha, err := TarCompressDirectory(dirName, tarName)
+	assert.NoError(t, err)
 	info, err := os.Stat(tarName)
-	check(err, t)
-
-	// test the size is 172 or 173
-	if info.Size()/10 != 17 {
-		t.Error("tarfile size does not match expectation. reported size =", info.Size(), "expected 172")
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, int64(158), info.Size(), "Tar file size")
+	assert.Equal(t, "986859044806a7e6cad8adeda2740cb081ebf895673c9bf9d3dbbf344d419bd5", sha, "Sha of tar file")
 }

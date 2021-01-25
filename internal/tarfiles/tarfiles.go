@@ -3,21 +3,23 @@ package tarfiles
 import (
 	"archive/tar"
 	"compress/gzip"
+	"crypto/sha256"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
 
-// TarCompressDirectory compresses the whole directory into an output tar file
-func TarCompressDirectory(dir string, outfile string) error {
-
+// TarCompressDirectory compresses the whole directory into an output tar file and returns the sha256 of the tarfile
+func TarCompressDirectory(dir string, outfile string) (string, error) {
 	f, err := os.Create(outfile)
 	if err != nil {
 		log.Errorf("Error creating file %s", outfile)
-		return err
+		return "", err
 	}
 
 	zw := gzip.NewWriter(f)
@@ -34,8 +36,15 @@ func TarCompressDirectory(dir string, outfile string) error {
 			log.Errorf("Error creating file info header")
 			return err
 		}
+		hdr.AccessTime = time.Unix(0, 0)
+		hdr.ChangeTime = time.Unix(0, 0)
+		hdr.ModTime = time.Unix(0, 0)
 		hdr.Name = filepath.ToSlash(path)
 		hdr.Name = strings.TrimPrefix(hdr.Name, dir)
+		hdr.Uid = 0
+		hdr.Uname = "unknown"
+		hdr.Gid = 0
+		hdr.Gname = "unknown"
 		if hdr.Name == "" {
 			hdr.Name = "./"
 		}
@@ -58,7 +67,6 @@ func TarCompressDirectory(dir string, outfile string) error {
 				log.Errorf("Error copying file bytes")
 				return err
 			}
-
 		}
 		return nil
 	}
@@ -66,22 +74,29 @@ func TarCompressDirectory(dir string, outfile string) error {
 	err = filepath.Walk(dir, fn)
 	if err != nil {
 		log.Errorf("error walking directory %v", err)
-		return err
+		return "", err
 	}
 
 	if err := tw.Close(); err != nil {
 		log.Errorf("Error closing tar file")
-		return err
+		return "", err
 	}
 	if err := zw.Close(); err != nil {
 		log.Errorf("Error closing compressed file")
-		return err
+		return "", err
 	}
+
+	f.Seek(0, 0)
+	hash := sha256.New()
+	if _, err := io.Copy(hash, f); err != nil {
+		return "", err
+	}
+	sum := hash.Sum(nil)
 
 	if err := f.Close(); err != nil {
 		log.Errorf("Error closing file")
-		return err
+		return "", err
 	}
 
-	return nil
+	return fmt.Sprintf("%x", sum), nil
 }

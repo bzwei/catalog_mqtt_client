@@ -78,11 +78,11 @@ func Upload(url string, filename string, contentType string, metadata map[string
 // till we can get a more permanent solution to send metadata along
 // with multipart contents
 func overrideContentType(metadata map[string]string) string {
-	ct := "application/vnd.redhat.topological-inventory.filename+tgz"
+	ct := "application/vnd.redhat.catalog.filename+tgz"
 	if val, ok := metadata["task_url"]; ok {
 		parts := strings.Split(val, "/")
 		taskID := parts[len(parts)-1]
-		ct = fmt.Sprintf("application/vnd.redhat.topological-inventory.%s+tgz", taskID)
+		ct = fmt.Sprintf("application/vnd.redhat.catalog.%s+tgz", taskID)
 	}
 	return ct
 }

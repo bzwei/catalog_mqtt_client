@@ -71,8 +71,9 @@ func TestWriteAndFlush(t *testing.T) {
 	defer ts.Close()
 
 	output := map[string]interface{}{
-		"upload": map[string]interface{}{"upload": "accepted"},
-		"sha256": "8d97f6ddad8fb21b41a2d97079fbb371e590fc5c4afb9556faa9de1ba025d84c",
+		"ingress":  map[string]interface{}{"upload": "accepted"},
+		"sha256":   "8d97f6ddad8fb21b41a2d97079fbb371e590fc5c4afb9556faa9de1ba025d84c",
+		"tar_size": int64(134),
 	}
 	shareFlushTest(t, writerObj, &output, "ok", "")
 }

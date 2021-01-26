@@ -78,7 +78,7 @@ func (ct *defaultCatalogTask) Update(data map[string]interface{}) error {
 		return err
 	}
 	if resp.StatusCode != http.StatusNoContent {
-		err = fmt.Errorf("Invalid HTTP Status code from post %d", resp.StatusCode)
+		err = fmt.Errorf("Invalid HTTP Status code from patch %d", resp.StatusCode)
 		ct.glog.Errorf("Error %v", err)
 		return err
 	}
@@ -105,9 +105,24 @@ func getWorkPayload(glog logger.Logger, url string) ([]byte, error) {
 		glog.Errorf("Error fetching request %s %v", url, err)
 		return nil, err
 	}
+	if !successGetCode(resp.StatusCode) {
+		err = fmt.Errorf("Invalid HTTP Status code from get %s, status: %d", url, resp.StatusCode)
+		glog.Errorf("Error %v", err)
+		return nil, err
+	}
 
 	defer resp.Body.Close()
 	return ioutil.ReadAll(resp.Body)
+}
+
+func successGetCode(code int) bool {
+	var validCodes = [...]int{200, 201, 202}
+	for _, v := range validCodes {
+		if v == code {
+			return true
+		}
+	}
+	return false
 }
 
 // Parse the request into RequestMessage

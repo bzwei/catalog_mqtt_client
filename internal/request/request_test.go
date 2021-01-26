@@ -41,7 +41,15 @@ func (task *fakeCatalogTask) Get() (*common.RequestMessage, error) {
 	}
 	return &message, nil
 }
-func (task *fakeCatalogTask) Update(data map[string]interface{}) error { return nil }
+func (task *fakeCatalogTask) Update(data map[string]interface{}) error {
+	if data["state"] != "running" {
+		return fmt.Errorf("Expected to receive running state, actual: %v", data["state"])
+	}
+	if data["message"] == nil {
+		return fmt.Errorf("Expected message not to be empty")
+	}
+	return nil
+}
 
 type fakePageWriter struct{}
 

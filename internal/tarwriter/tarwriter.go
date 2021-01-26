@@ -75,6 +75,7 @@ func (tw *tarWriter) Flush() error {
 		statusErrors = append(statusErrors, "Failed to compress directory to a tar file")
 		return err
 	}
+	info, _ := os.Stat(fname)
 
 	b, uploadErr := upload.Upload(tw.uploadURL, fname, "application/vnd.redhat.topological-inventory.filename+tgz", tw.metadata)
 	os.RemoveAll(tw.dir)
@@ -92,7 +93,7 @@ func (tw *tarWriter) Flush() error {
 		return err
 	}
 
-	output := map[string]interface{}{"upload": m, "sha256": sha}
+	output := map[string]interface{}{"ingress": m, "sha256": sha, "tar_size": info.Size()}
 
 	err = tw.task.Update(map[string]interface{}{"state": "completed", "status": "ok", "output": &output})
 

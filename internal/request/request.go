@@ -163,6 +163,12 @@ func processRequest(ctx context.Context,
 	wc.Shutdown = shutdown
 	go startDispatcher(ctx, config, wc, pw, wh)
 
+	err = task.Update(map[string]interface{}{"state": "running", "message": "Catalog Worker Started at " + time.Now().Format(time.RFC3339)})
+	if err != nil {
+		glog.Errorf("Error updating the task with the starting message")
+		return
+	}
+
 	for _, j := range req.Input.Jobs {
 		wc.DispatchChannel <- j
 	}

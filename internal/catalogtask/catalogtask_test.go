@@ -29,19 +29,29 @@ func TestGet(t *testing.T) {
 
 	task := MakeCatalogTask(logger.CtxWithLoggerID(context.Background(), 123), ts.URL)
 	reqMessage, err := task.Get()
-	if err != nil {
-		t.Fatalf("Error parsing request data %v", err)
+	if assert.NoError(t, err) {
+		assert.Equal(t, "12345", reqMessage.ID, "ID")
+		assert.Equal(t, "pending", reqMessage.State, "State")
+		assert.Equal(t, "unknown", reqMessage.Status, "Status")
+		assert.Equal(t, toTime("2020-11-04T16:12:09Z"), reqMessage.CreatedAt, "CreateAt")
+		assert.Equal(t, toTime("2020-11-04T16:12:09Z"), reqMessage.UpdatedAt, "UpdatedAt")
+		assert.Equal(t, "tar", reqMessage.Input.ResponseFormat, "Input.ResponseFormat")
+		assert.Equal(t, "/ingress/upload", reqMessage.Input.UploadURL, "Input.UploadURL")
+		assert.Equal(t, "monitor", reqMessage.Input.Jobs[0].Method, "Job.Method")
+		assert.Equal(t, "/api/v2/jobs/7008", reqMessage.Input.Jobs[0].HrefSlug, "Job.HrefSlug")
 	}
+}
 
-	assert.Equal(t, "12345", reqMessage.ID, "ID")
-	assert.Equal(t, "pending", reqMessage.State, "State")
-	assert.Equal(t, "unknown", reqMessage.Status, "Status")
-	assert.Equal(t, toTime("2020-11-04T16:12:09Z"), reqMessage.CreatedAt, "CreateAt")
-	assert.Equal(t, toTime("2020-11-04T16:12:09Z"), reqMessage.UpdatedAt, "UpdatedAt")
-	assert.Equal(t, "tar", reqMessage.Input.ResponseFormat, "Input.ResponseFormat")
-	assert.Equal(t, "/ingress/upload", reqMessage.Input.UploadURL, "Input.UploadURL")
-	assert.Equal(t, "monitor", reqMessage.Input.Jobs[0].Method, "Job.Method")
-	assert.Equal(t, "/api/v2/jobs/7008", reqMessage.Input.Jobs[0].HrefSlug, "Job.HrefSlug")
+func TestGetBad(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	}))
+	task := MakeCatalogTask(logger.CtxWithLoggerID(context.Background(), 123), ts.URL)
+	_, err := task.Get()
+
+	if assert.Error(t, err, "Func Get") {
+		assert.True(t, strings.Contains(err.Error(), "Invalid HTTP Status code"))
+	}
 }
 
 func TestUpdate(t *testing.T) {

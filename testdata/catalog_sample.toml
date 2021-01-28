@@ -14,9 +14,6 @@ user="<<user name>>" #dev only
 password="<<user password>>" #dev only
 x_rh_identity="<<x-rh-identity>>" #dev only
 
-[GRPC]
-port=9000
-
 [logger]
 debug=true
 logfile="./catalog_mqtt_client" #log file path and name without .log extension

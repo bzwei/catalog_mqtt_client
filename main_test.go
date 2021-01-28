@@ -37,6 +37,5 @@ func TestMain(t *testing.T) {
 	assert.True(t, frh.catalogConfig.Debug)
 	assert.Equal(t, "<<Your Tower URL>>", frh.catalogConfig.URL)
 	assert.Equal(t, "<<Your Tower Token>>", frh.catalogConfig.Token)
-	assert.Equal(t, 9000, frh.catalogConfig.GRPCPort)
 	assert.Equal(t, &towerapiworker.DefaultAPIWorker{}, frh.workHandler)
 }

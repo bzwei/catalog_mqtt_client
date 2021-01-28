@@ -38,7 +38,7 @@ func (drh *DefaultRequestHandler) StartHandlingRequests(config *common.CatalogCo
 	shutdown := make(chan struct{})
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	if config.GRPCPort != 0 {
+	if _, ok := os.LookupEnv("YGG_SOCKET_ADDR"); ok {
 		grpcListener, err := startGRPCListener(config, wh, shutdown)
 		if err != nil {
 			defer grpcListener.stop()

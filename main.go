@@ -63,7 +63,6 @@ func makeConfig() *common.CatalogConfig {
 	config.Debug = viper.GetBool("logger.debug")
 	config.MQTTURL = viper.GetString("MQTT_BROKER.url")
 	config.GUID = viper.GetString("MQTT_BROKER.uuid")
-	config.GRPCPort = viper.GetInt("GRPC.port")
 
 	flag.Parse()
 	if config.Debug {

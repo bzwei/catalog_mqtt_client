@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"os"
-	"strings"
+	"regexp"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
@@ -27,22 +27,28 @@ func TestGetLogger2(t *testing.T) {
 	logger.Println("One line")
 
 	logs := strBuf.String()
-	if !strings.Contains(logs, `level=info msg="[id=101] hello work!`) {
+	res, _ := regexp.MatchString(`level=info msg="\[\S*\] \[id=101] hello work!`, logs)
+	if !res {
 		t.Error("Failed with Info()")
 	}
-	if !strings.Contains(logs, `level=info msg="[id=101] flag is true`) {
+	res, _ = regexp.MatchString(`level=info msg="\[\S*\] \[id=101] flag is true`, logs)
+	if !res {
 		t.Error("Failed with Infof()")
 	}
-	if !strings.Contains(logs, `level=error msg="[id=101] unexpected happens`) {
+	res, _ = regexp.MatchString(`level=error msg="\[\S*\] \[id=101] unexpected happens`, logs)
+	if !res {
 		t.Error("Failed with Error()")
 	}
-	if !strings.Contains(logs, `level=error msg="[id=101] error bad input`) {
+	res, _ = regexp.MatchString(`level=error msg="\[\S*\] \[id=101] error bad input`, logs)
+	if !res {
 		t.Error("Failed with Errorf()")
 	}
-	if !strings.Contains(logs, `level=info msg="[id=101] This is number 100`) {
+	res, _ = regexp.MatchString(`level=info msg="\[\S*\] \[id=101] This is number 100`, logs)
+	if !res {
 		t.Error("Failed with Printf()")
 	}
-	if !strings.Contains(logs, `level=info msg="[id=101] One line`) {
+	res, _ = regexp.MatchString(`level=info msg="\[\S*\] \[id=101] One line`, logs)
+	if !res {
 		t.Error("Failed with Println()")
 	}
 }

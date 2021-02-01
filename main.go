@@ -119,6 +119,5 @@ func configLogger() *os.File {
 
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(logf)
-	log.SetReportCaller(true)
 	return logf
 }

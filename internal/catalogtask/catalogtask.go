@@ -82,7 +82,7 @@ func (ct *defaultCatalogTask) Update(data map[string]interface{}) error {
 		ct.glog.Errorf("Error %v", err)
 		return err
 	}
-	ct.glog.Infof("Task Update Statue Code %d", resp.StatusCode)
+	ct.glog.Infof("Task Update Status Code %d", resp.StatusCode)
 	ct.glog.Infof("Response from Patch %s", string(body))
 	return nil
 }

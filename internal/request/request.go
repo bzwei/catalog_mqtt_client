@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -202,7 +203,22 @@ func processRequest(ctx context.Context,
 func startWorker(ctx context.Context, config *common.CatalogConfig, job common.JobParam, wh towerapiworker.WorkHandler, wc towerapiworker.WorkChannels) {
 	glog := logger.GetLogger(ctx)
 	glog.Info("Worker starting")
+	glog.Info(stats())
 	defer glog.Info("Worker finished")
 	wh.StartWork(ctx, config, job, nil, wc)
 	wc.FinishedChannel <- true
+}
+
+// stats
+func stats() string {
+	var ms runtime.MemStats
+	runtime.ReadMemStats(&ms)
+
+	return fmt.Sprintf("Current Stats Alloc = %v MiB TotalAlloc = %v MiB Sys = %v MiB NumGC = %v NumGoroutine = %v",
+		bToMb(ms.Alloc), bToMb(ms.TotalAlloc), bToMb(ms.Sys), ms.NumGC, runtime.NumGoroutine())
+
+}
+
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
 }

@@ -1,24 +1,23 @@
 package main
 
 import (
-	"crypto/tls"
 	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
-	"time"
 
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/request"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/towerapiworker"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
 	viper "github.com/spf13/viper"
 )
 
+// Version of the release
 var Version = "development"
+
+// Sha1 is the sha of source commit for the release
 var Sha1 = "unknown"
 
 func main() {
@@ -31,15 +30,7 @@ func main() {
 
 	config := makeConfig()
 
-	mqttURL := viper.GetString("MQTT_BROKER.url")
-	mqttClient, err := connect("tower_client_"+viper.GetString("MQTT_BROKER.uuid"), mqttURL)
-	if err != nil {
-		log.Errorf("Error connecting to MQTT Server %v", err)
-		return
-	}
-	log.Infof("Connected to MQTT Server %s", mqttURL)
-
-	startRun(config, mqttClient, &request.DefaultRequestHandler{})
+	startRun(config, &request.DefaultRequestHandler{})
 }
 
 func initConfig() {
@@ -56,34 +47,11 @@ func initConfig() {
 	}
 }
 
-func connect(clientID string, mqttURL string) (mqtt.Client, error) {
-	opts := createClientOptions(clientID, mqttURL)
-	client := mqtt.NewClient(opts)
-	token := client.Connect()
-	for !token.WaitTimeout(3 * time.Second) {
-	}
-	if err := token.Error(); err != nil {
-		return nil, err
-	}
-	return client, nil
-}
-
-func createClientOptions(clientID string, mqttURL string) *mqtt.ClientOptions {
-	opts := mqtt.NewClientOptions()
-	opts.AddBroker(mqttURL)
-	opts.SetClientID(clientID)
-	// TODO: This is for testing remove it once we dock with RHC
-	if strings.HasPrefix(mqttURL, "ssl://") {
-		opts.SetTLSConfig(&tls.Config{InsecureSkipVerify: true})
-	}
-	return opts
-}
-
-func startRun(config *common.CatalogConfig, mqttClient mqtt.Client, rh request.Handler) {
+func startRun(config *common.CatalogConfig, rh request.Handler) {
 	defer log.Info("Finished Catalog Worker")
 	log.Infof("Catalog MQTT Client version %s GIT SHA %s", Version, Sha1)
 
-	rh.StartHandlingRequests(mqttClient, config, &towerapiworker.DefaultAPIWorker{})
+	rh.StartHandlingRequests(config, &towerapiworker.DefaultAPIWorker{})
 }
 
 func makeConfig() *common.CatalogConfig {
@@ -102,9 +70,11 @@ func makeConfig() *common.CatalogConfig {
 	} else {
 		log.SetLevel(log.WarnLevel)
 	}
-	if config.Token == "" || config.URL == "" || config.GUID == "" {
-		log.Fatal("Token, GUID and URL parameters are required")
-	}
+	/*
+		if config.Token == "" || config.URL == "" || config.GUID == "" {
+			log.Fatal("Token, GUID and URL parameters are required")
+		}
+	*/
 
 	return &config
 }

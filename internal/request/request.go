@@ -1,9 +1,7 @@
 package request
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
@@ -18,13 +16,12 @@ import (
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/tarwriter"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/towerapiworker"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
 )
 
 // Handler interface allows for easy mocking during testing
 type Handler interface {
-	StartHandlingRequests(mqttClient mqtt.Client, config *common.CatalogConfig, wh towerapiworker.WorkHandler)
+	StartHandlingRequests(config *common.CatalogConfig, wh towerapiworker.WorkHandler)
 	//parseRequest(b []byte) (*RequestMessage, error)
 }
 
@@ -32,13 +29,28 @@ type Handler interface {
 type DefaultRequestHandler struct {
 }
 
+type listener interface {
+	stop()
+}
+
 // StartHandlingRequests starts a MQTT listener. It will not stop until receives a system signal.
-func (drh *DefaultRequestHandler) StartHandlingRequests(mqttClient mqtt.Client, config *common.CatalogConfig, wh towerapiworker.WorkHandler) {
-	defer mqttClient.Disconnect(10)
+func (drh *DefaultRequestHandler) StartHandlingRequests(config *common.CatalogConfig, wh towerapiworker.WorkHandler) {
 	sigs := make(chan os.Signal, 1)
 	shutdown := make(chan struct{})
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	startMQTTListener(mqttClient, config, wh, shutdown)
+
+	if _, ok := os.LookupEnv("YGG_SOCKET_ADDR"); ok {
+		grpcListener, err := startGRPCListener(config, wh, shutdown)
+		if err != nil {
+			defer grpcListener.stop()
+		}
+	}
+	if config.MQTTURL != "" {
+		mqttListener, err := startMQTTListener(config, wh, shutdown)
+		if err != nil {
+			defer mqttListener.stop()
+		}
+	}
 	done := false
 	for !done {
 		select {
@@ -50,32 +62,6 @@ func (drh *DefaultRequestHandler) StartHandlingRequests(mqttClient mqtt.Client, 
 		}
 	}
 	log.Info("MQTT Client Ending")
-}
-
-func startMQTTListener(mqttClient mqtt.Client, config *common.CatalogConfig, wh towerapiworker.WorkHandler, shutdown chan struct{}) {
-	ctx := context.Background()
-	topic := "out/" + config.GUID
-	log.Infof("Subscribing to topic %s", topic)
-	counter := 0
-	fn := func(client mqtt.Client, msg mqtt.Message) {
-		log.Infof("Received a MQTT request %s", string(msg.Payload()))
-		m := common.MQTTMessage{}
-		mqttDecoder := json.NewDecoder(bytes.NewReader(msg.Payload()))
-		mqttDecoder.UseNumber()
-		err := mqttDecoder.Decode(&m)
-		if err != nil {
-			log.Errorf("Error decoding mqtt json %v", err)
-			return
-		}
-		log.Infof("Process Request %s", m.URL)
-		counter++
-		nextCtx := logger.CtxWithLoggerID(ctx, counter)
-		go processRequest(nextCtx, m.URL, config, wh, catalogtask.MakeCatalogTask(nextCtx, m.URL), &defaultPageWriterFactory{}, shutdown)
-	}
-
-	if token := mqttClient.Subscribe(topic, 0, fn); token.Wait() && token.Error() != nil {
-		log.Errorf("Encountered Token Error %v", token.Error())
-	}
 }
 
 func startDispatcher(ctx context.Context, config *common.CatalogConfig, wc towerapiworker.WorkChannels, pw common.PageWriter, wh towerapiworker.WorkHandler) {

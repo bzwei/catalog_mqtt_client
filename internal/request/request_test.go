@@ -34,7 +34,6 @@ func (task *fakeCatalogTask) Get() (*common.RequestMessage, error) {
 		Input: common.RequestInput{
 			ResponseFormat: "tar",
 			Jobs: []common.JobParam{
-				{Method: "monitor", HrefSlug: "/api/v2/jobs/7008"},
 				{Method: "get", HrefSlug: "/api/v2/inventories/899"},
 			},
 		},
@@ -69,8 +68,8 @@ func TestProcessRequest(t *testing.T) {
 	pwf := fakePageWriterFactory{}
 	shutdown := make(chan struct{})
 	processRequest(logger.CtxWithLoggerID(context.Background(), 123), "testurl", &common.CatalogConfig{}, &fh, &ct, &pwf, shutdown)
-	if fh.timesCalled != 2 {
-		t.Fatalf("2 workers should have been started only %d were started", fh.timesCalled)
+	if fh.timesCalled != 1 {
+		t.Fatalf("1 workers should have been started only %d were started", fh.timesCalled)
 	}
 }
 

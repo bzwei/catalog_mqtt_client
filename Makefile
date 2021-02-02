@@ -9,7 +9,7 @@ build:
 	go build -ldflags="-X 'main.Version=${VERSION}' -X main.Sha1=`git rev-parse HEAD`" -o ${BINARY} ${SRC_FILES}
 
 test:
-	go test -v . ./...
+	go test -race -v . ./...
 
 test_debug:
 	dlv test ${SRC_FILES} ${OTHER_FILES}

@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/request"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/towerapiworker"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/request"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/towerapiworker"
 	log "github.com/sirupsen/logrus"
 	viper "github.com/spf13/viper"
 )

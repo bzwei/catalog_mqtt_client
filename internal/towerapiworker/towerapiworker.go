@@ -16,10 +16,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/artifacts"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/filters"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/artifacts"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/filters"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/logger"
 )
 
 // WorkChannels collects all channels for communication between the api worker and client request goroutines

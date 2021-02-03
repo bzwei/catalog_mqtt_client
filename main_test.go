@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/towerapiworker"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/towerapiworker"
 	"github.com/stretchr/testify/assert"
 )
 

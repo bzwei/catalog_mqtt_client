@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/catalogtask"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/catalogtask"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/logger"
 )
 
 type jsonWriter struct {

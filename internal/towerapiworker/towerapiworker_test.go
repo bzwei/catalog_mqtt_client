@@ -3,7 +3,7 @@ package towerapiworker
 import (
 	"testing"
 
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
 )
 
 func TestGet(t *testing.T) {

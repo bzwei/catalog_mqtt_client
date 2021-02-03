@@ -7,11 +7,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/catalogtask"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/tarfiles"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/upload"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/catalogtask"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/logger"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/tarfiles"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/upload"
 )
 
 type tarWriter struct {

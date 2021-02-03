@@ -17,6 +17,7 @@ import (
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/tarwriter"
 	"github.com/RedHatInsights/catalog_mqtt_client/internal/towerapiworker"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // Handler interface allows for easy mocking during testing
@@ -152,12 +153,18 @@ func processRequest(ctx context.Context,
 	defer close(wc.DispatchChannel)
 	defer close(wc.FinishedChannel)
 	defer close(wc.ResponseChannel)
+	defer close(wc.WaitChannel)
 
 	wc.Shutdown = shutdown
 	go startDispatcher(ctx, config, wc, pw, wh)
 
 	for _, j := range req.Input.Jobs {
 		wc.DispatchChannel <- j
+	}
+
+	timeout := viper.GetInt64("worker.timeout_minutes")
+	if timeout == 0 {
+		timeout = 10
 	}
 	var allErrors []string
 	allDone := false
@@ -169,7 +176,7 @@ func processRequest(ctx context.Context,
 		case data := <-wc.ErrorChannel:
 			glog.Infof("Error received %s", data)
 			allErrors = append(allErrors, data)
-		case <-time.After(10 * time.Minute):
+		case <-time.After(time.Duration(timeout) * time.Minute):
 			glog.Infof("Waitgroup timed out")
 			allDone = true
 		case <-wc.Shutdown:

@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
 	log "github.com/sirupsen/logrus"
 )
 

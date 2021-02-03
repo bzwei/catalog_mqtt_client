@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/catalogtask"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/common"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/logger"
-	"github.com/RedHatInsights/catalog_mqtt_client/internal/towerapiworker"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/catalogtask"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/logger"
+	"github.com/RedHatInsights/rhc_catalog_worker/internal/towerapiworker"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
 )

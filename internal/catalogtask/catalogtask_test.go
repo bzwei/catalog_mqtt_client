@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/logger"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/logger"
 )
 
 func toTime(str string) time.Time {

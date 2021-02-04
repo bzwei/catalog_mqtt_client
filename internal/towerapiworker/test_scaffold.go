@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/logger"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/common"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/logger"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )

@@ -7,11 +7,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/catalogtask"
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/logger"
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/tarfiles"
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/upload"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/catalogtask"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/common"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/logger"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/tarfiles"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/upload"
 )
 
 type tarWriter struct {

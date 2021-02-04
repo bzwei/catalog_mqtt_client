@@ -10,12 +10,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/catalogtask"
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/jsonwriter"
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/logger"
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/tarwriter"
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/towerapiworker"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/catalogtask"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/common"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/jsonwriter"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/logger"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/tarwriter"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/towerapiworker"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

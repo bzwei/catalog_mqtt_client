@@ -19,4 +19,4 @@ timeout_minutes=10
 
 [logger]
 debug=true
-logfile="./rhc_catalog_worker" #log file path and name without .log extension
+logfile="./rhc-worker-catalog" #log file path and name without .log extension

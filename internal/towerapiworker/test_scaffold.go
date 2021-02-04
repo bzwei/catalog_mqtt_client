@@ -106,7 +106,7 @@ func (ts *testScaffold) base(t *testing.T, jp common.JobParam, responseCode int,
 
 	ts.config = &common.CatalogConfig{Debug: false, URL: "https://192.1.1.1", Token: "123", SkipVerifyCertificate: true}
 	ts.client = fakeClient(t, responseBody, responseCode)
-	ts.context = logger.CtxWithLoggerID(context.Background(), 123)
+	ts.context = logger.CtxWithLoggerID(context.Background(), "123")
 }
 
 func (ts *testScaffold) runSuccess(t *testing.T, jp common.JobParam, responseCode int, responseBody []string, responses []map[string]interface{}) {

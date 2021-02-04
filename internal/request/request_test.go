@@ -67,14 +67,14 @@ func TestProcessRequest(t *testing.T) {
 	ct := fakeCatalogTask{}
 	pwf := fakePageWriterFactory{}
 	shutdown := make(chan struct{})
-	processRequest(logger.CtxWithLoggerID(context.Background(), 123), "testurl", &common.CatalogConfig{}, &fh, &ct, &pwf, shutdown)
+	processRequest(logger.CtxWithLoggerID(context.Background(), "123"), "testurl", &common.CatalogConfig{}, &fh, &ct, &pwf, shutdown)
 	if fh.timesCalled != 1 {
 		t.Fatalf("1 workers should have been started only %d were started", fh.timesCalled)
 	}
 }
 
 func TestMakePageWriter(t *testing.T) {
-	ctx := logger.CtxWithLoggerID(context.Background(), 123)
+	ctx := logger.CtxWithLoggerID(context.Background(), "123")
 	factory := defaultPageWriterFactory{}
 	metadata := map[string]string{"task_url": "testurl"}
 

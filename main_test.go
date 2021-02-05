@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/towerapiworker"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/common"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/towerapiworker"
 	"github.com/stretchr/testify/assert"
 )
 

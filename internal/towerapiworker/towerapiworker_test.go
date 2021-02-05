@@ -3,7 +3,7 @@ package towerapiworker
 import (
 	"testing"
 
-	"github.com/RedHatInsights/rhc_catalog_worker/internal/common"
+	"github.com/RedHatInsights/rhc-worker-catalog/internal/common"
 )
 
 func TestGet(t *testing.T) {

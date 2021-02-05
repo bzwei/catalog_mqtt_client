@@ -25,7 +25,7 @@ func (m *mockCatalogTask) Update(data map[string]interface{}) error {
 func TestWrite(t *testing.T) {
 	task := new(mockCatalogTask)
 	task.On("Update", map[string]interface{}{"state": "running", "status": "ok", "output": &map[string]interface{}{"key1": "val1", "key2": "val2"}}).Return(nil)
-	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), 123), task)
+	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), "123"), task)
 	err := jwriter.Write("test page", []byte(`{"key1": "val1", "key2": "val2"}`))
 
 	task.AssertExpectations(t)
@@ -33,7 +33,7 @@ func TestWrite(t *testing.T) {
 }
 
 func TestWriteError(t *testing.T) {
-	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), 123), nil)
+	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), "123"), nil)
 	err := jwriter.Write("test page", []byte(`bad{"key1": "val1", "key2": "val2"}`))
 	if assert.Error(t, err) {
 		assert.IsType(t, &json.SyntaxError{}, err)
@@ -43,7 +43,7 @@ func TestWriteError(t *testing.T) {
 func TestFlush(t *testing.T) {
 	task := new(mockCatalogTask)
 	task.On("Update", map[string]interface{}{"state": "completed", "status": "ok"}).Return(nil)
-	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), 123), task)
+	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), "123"), task)
 	err := jwriter.Flush()
 
 	task.AssertExpectations(t)
@@ -53,7 +53,7 @@ func TestFlush(t *testing.T) {
 func TestFlushError(t *testing.T) {
 	task := new(mockCatalogTask)
 	task.On("Update", map[string]interface{}{"state": "completed", "status": "error", "output": &map[string]interface{}{"errors": []string{"error 1", "error 2"}}}).Return(nil)
-	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), 123), task)
+	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), "123"), task)
 	err := jwriter.FlushErrors([]string{"error 1", "error 2"})
 
 	task.AssertExpectations(t)

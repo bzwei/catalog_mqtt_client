@@ -22,13 +22,11 @@ type catalogServerImpl struct {
 	config     *common.CatalogConfig
 	wokHandler towerapiworker.WorkHandler
 	shutdown   chan struct{}
-	counter    int
 }
 
 // Run is the service method provided by the GRPC server
 func (s *catalogServerImpl) Send(ctx context.Context, in *pb.Data) (*pb.Receipt, error) {
-	log.Printf("Received a catalog request: %s", in.MessageId)
-	s.counter++
+	log.Printf("Received a catalog request with ID: %s", in.MessageId)
 
 	payload := make(map[string]interface{})
 	if err := json.Unmarshal(in.Payload, &payload); err != nil {
@@ -41,7 +39,8 @@ func (s *catalogServerImpl) Send(ctx context.Context, in *pb.Data) (*pb.Receipt,
 		return nil, fmt.Errorf("Payload does not contain an URL")
 	}
 	url := fmt.Sprintf("%v", urlObj)
-	nextCtx := logger.CtxWithLoggerID(ctx, s.counter)
+	nextCtx := logger.CtxWithLoggerID(ctx, in.MessageId)
+	logger.GetLogger(nextCtx).Infof("Request payload: %v", payload)
 	go processRequest(nextCtx, url, s.config, s.wokHandler, catalogtask.MakeCatalogTask(nextCtx, url), &defaultPageWriterFactory{}, s.shutdown)
 
 	return &pb.Receipt{}, nil

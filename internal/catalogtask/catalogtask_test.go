@@ -27,7 +27,7 @@ func TestGet(t *testing.T) {
 		w.Write(b)
 	}))
 
-	task := MakeCatalogTask(logger.CtxWithLoggerID(context.Background(), 123), ts.URL)
+	task := MakeCatalogTask(logger.CtxWithLoggerID(context.Background(), "123"), ts.URL)
 	reqMessage, err := task.Get()
 	if assert.NoError(t, err) {
 		assert.Equal(t, "12345", reqMessage.ID, "ID")
@@ -46,7 +46,7 @@ func TestGetBad(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}))
-	task := MakeCatalogTask(logger.CtxWithLoggerID(context.Background(), 123), ts.URL)
+	task := MakeCatalogTask(logger.CtxWithLoggerID(context.Background(), "123"), ts.URL)
 	_, err := task.Get()
 
 	if assert.Error(t, err, "Func Get") {
@@ -61,7 +61,7 @@ func TestUpdate(t *testing.T) {
 		w.WriteHeader(retCode)
 	}))
 
-	task := MakeCatalogTask(logger.CtxWithLoggerID(context.Background(), 123), ts.URL)
+	task := MakeCatalogTask(logger.CtxWithLoggerID(context.Background(), "123"), ts.URL)
 	err := task.Update(data)
 	assert.NoError(t, err, "Func Update")
 

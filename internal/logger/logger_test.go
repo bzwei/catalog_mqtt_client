@@ -18,7 +18,7 @@ func TestGetLogger2(t *testing.T) {
 	var strBuf bytes.Buffer
 
 	log.SetOutput(&strBuf)
-	logger := GetLogger(CtxWithLoggerID(context.Background(), 101))
+	logger := GetLogger(CtxWithLoggerID(context.Background(), "101"))
 	logger.Info("hello work!")
 	logger.Infof("flag is %v", true)
 	logger.Error("unexpected happens")

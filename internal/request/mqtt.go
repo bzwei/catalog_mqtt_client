@@ -5,6 +5,7 @@ import (
 	context "context"
 	"crypto/tls"
 	"encoding/json"
+	"strconv"
 	"strings"
 	"time"
 
@@ -76,7 +77,7 @@ func startMQTTListener(config *common.CatalogConfig, wh towerapiworker.WorkHandl
 		}
 		log.Infof("Process Request %s", m.URL)
 		counter++
-		nextCtx := logger.CtxWithLoggerID(ctx, counter)
+		nextCtx := logger.CtxWithLoggerID(ctx, strconv.Itoa(counter))
 		go processRequest(nextCtx, m.URL, config, wh, catalogtask.MakeCatalogTask(nextCtx, m.URL), &defaultPageWriterFactory{}, shutdown)
 	}
 

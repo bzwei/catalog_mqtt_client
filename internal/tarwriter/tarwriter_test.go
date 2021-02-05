@@ -33,7 +33,7 @@ func shareWriteTest(t *testing.T, httpStatus int, body string) (*httptest.Server
 	}))
 
 	task := new(mockCatalogTask)
-	twriter, err := MakeTarWriter(logger.CtxWithLoggerID(context.Background(), 123), task, ts.URL, map[string]string{"task_url": "taskURL"})
+	twriter, err := MakeTarWriter(logger.CtxWithLoggerID(context.Background(), "123"), task, ts.URL, map[string]string{"task_url": "taskURL"})
 	err = twriter.Write("testpage", []byte(strings.Repeat("na", 512)))
 	assert.NoError(t, err)
 
@@ -95,7 +95,7 @@ func TestUnmarshalFailed(t *testing.T) {
 func TestFlushError(t *testing.T) {
 	task := new(mockCatalogTask)
 	task.On("Update", map[string]interface{}{"state": "completed", "status": "error", "output": &map[string]interface{}{"errors": []string{"error 1", "error 2"}}}).Return(nil)
-	twriter, err := MakeTarWriter(logger.CtxWithLoggerID(context.Background(), 123), task, "uploadURL", map[string]string{"task_url": "taskURL"})
+	twriter, err := MakeTarWriter(logger.CtxWithLoggerID(context.Background(), "123"), task, "uploadURL", map[string]string{"task_url": "taskURL"})
 	err = twriter.FlushErrors([]string{"error 1", "error 2"})
 
 	task.AssertExpectations(t)

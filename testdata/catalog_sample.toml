@@ -10,6 +10,7 @@ uuid="<<UUID Generated at install time>>"
 [AUTH]
 client_cert="/etc/pki/consumer/cert.pem"
 client_key="/etc/pki/consumer/key.pem"
+root_ca="<<CA_cert.pem>>"
 user="<<user name>>" #dev only
 password="<<user password>>" #dev only
 x_rh_identity="<<x-rh-identity>>" #dev only

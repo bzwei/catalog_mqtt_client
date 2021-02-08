@@ -2,6 +2,8 @@ package common
 
 import (
 	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -21,6 +23,19 @@ func MakeHTTPClient(request *http.Request) (*http.Client, error) {
 
 		tlsConfig := &tls.Config{
 			Certificates: []tls.Certificate{cert},
+		}
+
+		caFile := viper.GetString("AUTH.root_ca")
+		if caFile != "" {
+			caCerts := x509.NewCertPool()
+
+			caData, err := ioutil.ReadFile(caFile)
+			if err != nil {
+				log.Error("Failed to load root CA")
+				return nil, err
+			}
+			caCerts.AppendCertsFromPEM(caData)
+			tlsConfig.RootCAs = caCerts
 		}
 
 		tlsConfig.BuildNameToCertificate()

@@ -1,12 +1,12 @@
 # Catalog Worker
 
-The Catalog Worker runs under the aegis of Redhat MQTT Client (yggdrasil). It can be run in a vm or container and talks to an on-prem Ansible Tower. It can
+The Catalog Worker runs under the aegis of Red Hat Connect (rhc). It can be run in a vm or container and talks to an on-prem Ansible Tower. It can
 * Collect inventory objects from Ansible Tower
 * Launch and monitor jobs on Ansible Tower.
 
-The Redhat MQTT Client (RMC) subscribes to a specific topic on the cloud controller based on its
-unqiue guid. When a task needs to be done on the client the cloud controller sends a small message
-packet to the RMC which transfers the message to the Catalog Worker via GRPC. The message includes the url to get the task details, a date time stamp and the kind of task.
+The Red Hat Connect (rhc) subscribes to a specific topic on the Cloud Connector based on its
+unqiue guid. When a task needs to be done on the client the Cloud Connector sends a small message
+packet to the RHC which transfers the message to the Catalog Worker via GRPC. The message includes the url to get the task details, a date time stamp and the kind of task.
 ```json
 {
     "url": "http://cloud.redhat.com/api/catalog-inventory/v3.0/tasks/xxxx",
@@ -74,11 +74,3 @@ The list of objects needed by catalog are
 General Workflow
 
 ![Alt UsingUploadService](./docs/catalog_worker.png?raw=true)
-
-
-For Inventory Collection
-![Alt UsingUploadService](./docs/cat_mqtt1.png?raw=true)
-
-For Single Job 
-
-![Alt DirectTaskUpdate](./docs/cat_mqtt2.png?raw=true)

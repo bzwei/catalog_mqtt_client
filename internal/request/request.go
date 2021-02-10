@@ -34,7 +34,7 @@ type listener interface {
 	stop()
 }
 
-// StartHandlingRequests starts a MQTT listener. It will not stop until receives a system signal.
+// StartHandlingRequests starts a request listener. It will not stop until receives a system signal.
 func (drh *DefaultRequestHandler) StartHandlingRequests(config *common.CatalogConfig, wh towerapiworker.WorkHandler) {
 	sigs := make(chan os.Signal, 1)
 	shutdown := make(chan struct{})
@@ -42,13 +42,13 @@ func (drh *DefaultRequestHandler) StartHandlingRequests(config *common.CatalogCo
 
 	if _, ok := os.LookupEnv("YGG_SOCKET_ADDR"); ok {
 		grpcListener, err := startGRPCListener(config, wh, shutdown)
-		if err != nil {
+		if err == nil {
 			defer grpcListener.stop()
 		}
 	}
 	if config.MQTTURL != "" {
 		mqttListener, err := startMQTTListener(config, wh, shutdown)
-		if err != nil {
+		if err == nil {
 			defer mqttListener.stop()
 		}
 	}
@@ -62,7 +62,7 @@ func (drh *DefaultRequestHandler) StartHandlingRequests(config *common.CatalogCo
 			close(shutdown)
 		}
 	}
-	log.Info("MQTT Client Ending")
+	log.Info("Request listener stopped")
 }
 
 func startDispatcher(ctx context.Context, config *common.CatalogConfig, wc towerapiworker.WorkChannels, pw common.PageWriter, wh towerapiworker.WorkHandler) {

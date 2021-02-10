@@ -81,10 +81,15 @@ func makeConfig() *common.CatalogConfig {
 
 // Configure the logger
 func configLogger() *os.File {
-	logFileName := viper.GetString("logger.logfile") + strconv.Itoa(os.Getpid()) + ".log"
-	logf, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
-	if err != nil {
-		log.Fatalf("error opening log file: %v", err)
+	logf := os.Stdout
+	logFileName := viper.GetString("logger.logfile")
+	if logFileName != "" {
+		var err error
+		logFileName = logFileName + strconv.Itoa(os.Getpid()) + ".log"
+		logf, err = os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
+		if err != nil {
+			log.Fatalf("error opening log file: %v", err)
+		}
 	}
 
 	log.SetFormatter(&log.JSONFormatter{})

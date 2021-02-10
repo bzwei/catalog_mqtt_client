@@ -2,7 +2,7 @@ VERSION=0.0.1
 SRC_FILES= main.go
 OTHER_FILES= internal/filters/filters.go \
 	     internal/artifacts/artifacts.go
-BINARY=rhc_worker_catalog
+BINARY=rhc_catalog_worker
 .DEFAULT_GOAL := build
 
 build:

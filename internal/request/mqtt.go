@@ -40,14 +40,14 @@ func createClientOptions(clientID string, mqttURL string) *mqtt.ClientOptions {
 	return opts
 }
 
-func makeMQTTClient(config *common.CatalogConfig) mqtt.Client {
+func makeMQTTClient(config *common.CatalogConfig) (mqtt.Client, error) {
 	mqttClient, err := connect("tower_client_"+config.GUID, config.MQTTURL)
 	if err != nil {
 		log.Errorf("Error connecting to MQTT Server %v", err)
-		return nil
+		return nil, err
 	}
 	log.Infof("Connected to MQTT Server %s", config.MQTTURL)
-	return mqttClient
+	return mqttClient, nil
 }
 
 type mqttListener struct {
@@ -60,7 +60,10 @@ func (lis mqttListener) stop() {
 }
 
 func startMQTTListener(config *common.CatalogConfig, wh towerapiworker.WorkHandler, shutdown chan struct{}) (listener, error) {
-	mqttClient := makeMQTTClient(config)
+	mqttClient, err := makeMQTTClient(config)
+	if err != nil {
+		return nil, err
+	}
 	ctx := context.Background()
 	topic := "out/" + config.GUID
 	log.Infof("Subscribing to topic %s", topic)

@@ -35,7 +35,7 @@ func main() {
 
 func initConfig() {
 	var configFilePath string
-	flag.StringVar(&configFilePath, "config", "/etc/yggdrasil/workers/catalog.toml", "location of the config file")
+	flag.StringVar(&configFilePath, "config", "/etc/rhc/workers/catalog.toml", "location of the config file")
 	flag.Parse()
 
 	dir, file := filepath.Split(configFilePath)

@@ -44,9 +44,7 @@ type RequestMessage struct {
 
 // MQTTMessage stores all attributes of the MQTTMessage sent by catalog-inventory API
 type MQTTMessage struct {
-	URL  string `json:"url"`
-	Kind string `json:"kind"`
-	Sent string `json:"string"`
+	URL string `json:"url"`
 }
 
 // Page stores data in a page with a name

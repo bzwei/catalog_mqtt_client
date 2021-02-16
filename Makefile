@@ -39,7 +39,7 @@ debug:
 	dlv debug ${SRC_FILES}
 
 linux: 
-	GOOS=linux GOARCH=amd64 go build -x -o ${BINARY}.linux ${SRC_FILES}
+	GOOS=linux GOARCH=amd64 go build -ldflags="${LDFLAGS}" -x -o ${BINARY}.linux ${SRC_FILES}
 
 clean:
 	go clean

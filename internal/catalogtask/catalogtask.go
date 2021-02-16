@@ -14,7 +14,7 @@ import (
 
 // CatalogTask is an interface that gets or updates a catalog task
 type CatalogTask interface {
-	Get() (*common.RequestMessage, error)
+	Get() (*common.CatalogInventoryTask, error)
 	Update(data map[string]interface{}) error
 }
 
@@ -31,14 +31,14 @@ func MakeCatalogTask(ctx context.Context, url string) CatalogTask {
 	return &defaultCatalogTask{ctx: ctx, url: url, glog: glog}
 }
 
-func (ct *defaultCatalogTask) Get() (*common.RequestMessage, error) {
+func (ct *defaultCatalogTask) Get() (*common.CatalogInventoryTask, error) {
 	body, err := getWorkPayload(ct.glog, ct.url)
 	if err != nil {
 		ct.glog.Errorf("Error reading payload in %s %v", ct.url, err)
 		return nil, err
 	}
 
-	req, err := parseRequest(ct.glog, body)
+	req, err := parseTask(ct.glog, body)
 	if err != nil {
 		ct.glog.Errorf("Error parsing payload in %s %v", ct.url, err)
 	}
@@ -125,9 +125,9 @@ func successGetCode(code int) bool {
 	return false
 }
 
-// Parse the request into RequestMessage
-func parseRequest(glog logger.Logger, b []byte) (*common.RequestMessage, error) {
-	req := common.RequestMessage{}
+// Parse the request into CatalogInventoryTask
+func parseTask(glog logger.Logger, b []byte) (*common.CatalogInventoryTask, error) {
+	req := common.CatalogInventoryTask{}
 	decoder := json.NewDecoder(bytes.NewReader(b))
 	decoder.UseNumber()
 	err := decoder.Decode(&req)

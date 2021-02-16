@@ -15,7 +15,7 @@ type mockCatalogTask struct {
 	mock.Mock
 }
 
-func (m *mockCatalogTask) Get() (*common.RequestMessage, error) { return nil, nil }
+func (m *mockCatalogTask) Get() (*common.CatalogInventoryTask, error) { return nil, nil }
 
 func (m *mockCatalogTask) Update(data map[string]interface{}) error {
 	m.Called(data)

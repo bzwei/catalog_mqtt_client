@@ -27,8 +27,8 @@ func (fh *fakeHandler) StartWork(ctx context.Context, config *common.CatalogConf
 
 type fakeCatalogTask struct{}
 
-func (task *fakeCatalogTask) Get() (*common.RequestMessage, error) {
-	message := common.RequestMessage{
+func (task *fakeCatalogTask) Get() (*common.CatalogInventoryTask, error) {
+	message := common.CatalogInventoryTask{
 		ID:     "12345",
 		State:  "pending",
 		Status: "ok",

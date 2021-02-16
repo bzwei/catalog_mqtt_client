@@ -1,5 +1,7 @@
-VERSION=0.0.1
-BUILD_DATE := `date +%Y-%m-%d\ %H:%M`
+VERSION := `git describe --tags --abbrev=0`
+BUILD_DATE := `date +%Y-%m-%d\ %H:%M:%S`
+SHA := `git rev-parse HEAD`
+
 SRC_FILES= main.go
 OTHER_FILES= internal/filters/filters.go \
 	     internal/artifacts/artifacts.go
@@ -9,7 +11,7 @@ BINARY=rhc_catalog_worker
 LDFLAGS :=
 LDFLAGS += -X 'github.com/RedHatInsights/rhc-worker-catalog/build.Version=${VERSION}'
 LDFLAGS += -X 'github.com/RedHatInsights/rhc-worker-catalog/build.Build=${BUILD_DATE}'
-LDFLAGS += -X 'github.com/RedHatInsights/rhc-worker-catalog/build.Sha1=`git rev-parse HEAD`'
+LDFLAGS += -X 'github.com/RedHatInsights/rhc-worker-catalog/build.Sha1=${SHA}'
 build:
 	go build -ldflags="${LDFLAGS}" -o ${BINARY} ${SRC_FILES}
 

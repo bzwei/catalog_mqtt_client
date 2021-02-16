@@ -1,6 +1,8 @@
 [ANSIBLE_TOWER]
 token="<<Your Tower Token>>"
 url="<<Your Tower URL>>"
+uuid="<<Tower UUID>>"
+name="<<Name of the tower>>"
 verify_ssl=false
 
 [MQTT_BROKER]

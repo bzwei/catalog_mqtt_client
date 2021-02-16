@@ -8,12 +8,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/RedHatInsights/rhc-worker-catalog/build"
 	"github.com/RedHatInsights/rhc-worker-catalog/internal/catalogtask"
 	"github.com/RedHatInsights/rhc-worker-catalog/internal/common"
 	"github.com/RedHatInsights/rhc-worker-catalog/internal/logger"
 	"github.com/RedHatInsights/rhc-worker-catalog/internal/towerapiworker"
 	pb "github.com/redhatinsights/yggdrasil/protocol"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	grpc "google.golang.org/grpc"
 )
 
@@ -76,7 +78,20 @@ func registerRHCWorker() string {
 	defer cancel()
 
 	// Register as a handler of the "catalog" type.
-	r, err := c.Register(ctx, &pb.RegistrationRequest{Handler: "catalog", Pid: int64(os.Getpid())})
+	registrationRequest := pb.RegistrationRequest{
+		Handler: "catalog",
+		Pid:     int64(os.Getpid()),
+		Features: map[string]string{
+			"SourceRef":       viper.GetString("ANSIBLE_TOWER.uuid"),
+			"SrcName":         viper.GetString("ANSIBLE_TOWER.name"),
+			"SrcType":         "ansible-tower",
+			"ApplicationType": "/insights/platform/catalog",
+			"WorkerVersion":   build.Version,
+			"WorkerBuild":     build.Build,
+			"WorkerSHA":       build.Sha1,
+		},
+	}
+	r, err := c.Register(ctx, &registrationRequest)
 	if err != nil {
 		log.Fatal(err)
 	}

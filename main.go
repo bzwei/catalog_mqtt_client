@@ -7,18 +7,13 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/RedHatInsights/rhc-worker-catalog/build"
 	"github.com/RedHatInsights/rhc-worker-catalog/internal/common"
 	"github.com/RedHatInsights/rhc-worker-catalog/internal/request"
 	"github.com/RedHatInsights/rhc-worker-catalog/internal/towerapiworker"
 	log "github.com/sirupsen/logrus"
 	viper "github.com/spf13/viper"
 )
-
-// Version of the release
-var Version = "development"
-
-// Sha1 is the sha of source commit for the release
-var Sha1 = "unknown"
 
 func main() {
 	initConfig()
@@ -49,7 +44,7 @@ func initConfig() {
 
 func startRun(config *common.CatalogConfig, rh request.Handler) {
 	defer log.Info("Finished Catalog Worker")
-	log.Infof("Catalog MQTT Client version %s GIT SHA %s", Version, Sha1)
+	log.Infof("Catalog Worker Version %s GIT SHA %s Build %s", build.Version, build.Sha1, build.Build)
 
 	rh.StartHandlingRequests(config, &towerapiworker.DefaultAPIWorker{})
 }

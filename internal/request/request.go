@@ -112,7 +112,7 @@ func (factory *defaultPageWriterFactory) makePageWriter(ctx context.Context, for
 	return pw, err
 }
 
-// Process the incoming MQTT Work Request
+// Process the incoming Work Request
 // Fetch the Actual WorkPayload and start the work
 func processRequest(ctx context.Context,
 	url string, config *common.CatalogConfig,

@@ -32,8 +32,8 @@ type RequestInput struct {
 	Jobs           []JobParam `json:"jobs"`
 }
 
-// RequestMessage stores all attributes of a catalog task retrived from catalog-inventory API
-type RequestMessage struct {
+// CatalogInventoryTask stores all attributes of a task retrived from catalog-inventory API
+type CatalogInventoryTask struct {
 	Input     RequestInput `json:"input"`
 	CreatedAt time.Time    `json:"created_at"`
 	ID        string       `json:"id"`
@@ -43,6 +43,7 @@ type RequestMessage struct {
 }
 
 // MQTTMessage stores all attributes of the MQTTMessage sent by catalog-inventory API
+// TODO: remove when mqtt client is no longer needed
 type MQTTMessage struct {
 	URL string `json:"url"`
 }

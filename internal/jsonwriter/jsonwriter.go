@@ -39,7 +39,7 @@ func (jw *jsonWriter) Write(name string, b []byte) error {
 
 // Flush updates the task to completed state
 func (jw *jsonWriter) Flush() error {
-	err := jw.task.Update(map[string]interface{}{"state": "completed", "status": "ok"})
+	err := jw.task.Update(map[string]interface{}{"state": "completed", "status": "ok", "message": "Catalog Worker Ended Successfully"})
 	if err != nil {
 		jw.glog.Errorf("Error updating task: %v", err)
 	}
@@ -51,7 +51,7 @@ func (jw *jsonWriter) FlushErrors(messages []string) error {
 	msg := map[string]interface{}{
 		"errors": messages,
 	}
-	err := jw.task.Update(map[string]interface{}{"state": "completed", "status": "error", "output": &msg})
+	err := jw.task.Update(map[string]interface{}{"state": "completed", "status": "error", "output": &msg, "message": "Catalog Worker Ended with errors"})
 	if err != nil {
 		jw.glog.Errorf("Error updating task: %v", err)
 	}

@@ -30,6 +30,8 @@ type RequestInput struct {
 	ResponseFormat string     `json:"response_format"`
 	UploadURL      string     `json:"upload_url"`
 	Jobs           []JobParam `json:"jobs"`
+	PreviousSHA    string     `json:"previous_sha"`
+	PreviousSize   int64      `json:"previous_size"`
 }
 
 // CatalogInventoryTask stores all attributes of a task retrived from catalog-inventory API

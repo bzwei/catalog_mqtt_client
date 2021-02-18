@@ -61,7 +61,7 @@ func (pw *fakePageWriter) FlushErrors(msg []string) error    { return nil }
 
 type fakePageWriterFactory struct{}
 
-func (factory *fakePageWriterFactory) makePageWriter(ctx context.Context, format string, uploadURL string, task catalogtask.CatalogTask, metadata map[string]string) (common.PageWriter, error) {
+func (factory *fakePageWriterFactory) makePageWriter(ctx context.Context, input common.RequestInput, task catalogtask.CatalogTask, metadata map[string]string) (common.PageWriter, error) {
 	return &fakePageWriter{}, nil
 }
 
@@ -81,14 +81,14 @@ func TestMakePageWriter(t *testing.T) {
 	factory := defaultPageWriterFactory{}
 	metadata := map[string]string{"task_url": "testurl"}
 
-	pw, _ := factory.makePageWriter(ctx, "tar", "testurl", catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
+	pw, _ := factory.makePageWriter(ctx, common.RequestInput{ResponseFormat: "tar"}, catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
 	pwType := fmt.Sprintf("%v", reflect.TypeOf(pw))
 	assert.Equal(t, "*tarwriter.tarWriter", pwType, "Page Writer Type")
 
-	pw, _ = factory.makePageWriter(ctx, "json", "testurl", catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
+	pw, _ = factory.makePageWriter(ctx, common.RequestInput{ResponseFormat: "json"}, catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
 	pwType = fmt.Sprintf("%v", reflect.TypeOf(pw))
 	assert.Equal(t, "*jsonwriter.jsonWriter", pwType, "Page Writer Type")
 
-	_, err := factory.makePageWriter(ctx, "gzip", "testurl", catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
+	_, err := factory.makePageWriter(ctx, common.RequestInput{ResponseFormat: "gzip"}, catalogtask.MakeCatalogTask(ctx, "testurl"), metadata)
 	assert.Error(t, err, "makePageWriter")
 }

@@ -15,16 +15,16 @@ import (
 )
 
 type tarWriter struct {
-	dir       string
-	task      catalogtask.CatalogTask
-	uploadURL string
-	ctx       context.Context
-	glog      logger.Logger
-	metadata  map[string]string
+	dir      string
+	task     catalogtask.CatalogTask
+	input    common.RequestInput
+	ctx      context.Context
+	glog     logger.Logger
+	metadata map[string]string
 }
 
 // MakeTarWriter creates a common.PageWriter that zip data as a tar file and upload to an URL.
-func MakeTarWriter(ctx context.Context, task catalogtask.CatalogTask, uploadURL string, metadata map[string]string) (common.PageWriter, error) {
+func MakeTarWriter(ctx context.Context, task catalogtask.CatalogTask, input common.RequestInput, metadata map[string]string) (common.PageWriter, error) {
 	glog := logger.GetLogger(ctx)
 	t := tarWriter{}
 	dir, err := ioutil.TempDir("", "catalog_client")
@@ -34,7 +34,7 @@ func MakeTarWriter(ctx context.Context, task catalogtask.CatalogTask, uploadURL 
 	}
 	t.dir = dir
 	t.task = task
-	t.uploadURL = uploadURL
+	t.input = input
 	t.ctx = ctx
 	t.glog = glog
 	t.metadata = metadata
@@ -77,7 +77,16 @@ func (tw *tarWriter) Flush() error {
 	}
 	info, _ := os.Stat(fname)
 
-	b, uploadErr := upload.Upload(tw.uploadURL, fname, "application/vnd.redhat.topological-inventory.filename+tgz", tw.metadata)
+	if sha == tw.input.PreviousSHA && info.Size() == tw.input.PreviousSize {
+		err = tw.task.Update(map[string]interface{}{"state": "completed", "status": "unchanged", "message": "Upload skipped since nothing has changed from last refresh"})
+		if err != nil {
+			tw.glog.Errorf("Error updating task: %v", err)
+			return err
+		}
+		return nil
+	}
+
+	b, uploadErr := upload.Upload(tw.input.UploadURL, fname, "application/vnd.redhat.catalog.filename+tgz", tw.metadata)
 	os.RemoveAll(tw.dir)
 	os.RemoveAll(tmpdir)
 	if uploadErr != nil {
@@ -95,7 +104,7 @@ func (tw *tarWriter) Flush() error {
 
 	output := map[string]interface{}{"ingress": m, "sha256": sha, "tar_size": info.Size()}
 
-	err = tw.task.Update(map[string]interface{}{"state": "completed", "status": "ok", "output": &output})
+	err = tw.task.Update(map[string]interface{}{"state": "completed", "status": "ok", "output": &output, "message": "Catalog Worker Completed Successfully"})
 
 	if err != nil {
 		tw.glog.Errorf("Error updating task: %v", err)
@@ -109,7 +118,7 @@ func (tw *tarWriter) FlushErrors(messages []string) error {
 	msg := map[string]interface{}{
 		"errors": messages,
 	}
-	err := tw.task.Update(map[string]interface{}{"state": "completed", "status": "error", "output": &msg})
+	err := tw.task.Update(map[string]interface{}{"state": "completed", "status": "error", "output": &msg, "message": "Catalog Worker Ended with errors"})
 	if err != nil {
 		tw.glog.Errorf("Error updating task: %v", err)
 		return err

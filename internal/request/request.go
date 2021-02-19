@@ -93,21 +93,21 @@ func startDispatcher(ctx context.Context, config *common.CatalogConfig, wc tower
 }
 
 type pageWriterFactory interface {
-	makePageWriter(ctx context.Context, format string, uploadURL string, task catalogtask.CatalogTask, metadata map[string]string) (common.PageWriter, error)
+	makePageWriter(ctx context.Context, input common.RequestInput, task catalogtask.CatalogTask, metadata map[string]string) (common.PageWriter, error)
 }
 
 type defaultPageWriterFactory struct{}
 
-func (factory *defaultPageWriterFactory) makePageWriter(ctx context.Context, format string, uploadURL string, task catalogtask.CatalogTask, metadata map[string]string) (common.PageWriter, error) {
+func (factory *defaultPageWriterFactory) makePageWriter(ctx context.Context, input common.RequestInput, task catalogtask.CatalogTask, metadata map[string]string) (common.PageWriter, error) {
 	var pw common.PageWriter
 	var err error
-	switch strings.ToLower(format) {
+	switch strings.ToLower(input.ResponseFormat) {
 	case "tar":
-		pw, err = tarwriter.MakeTarWriter(ctx, task, uploadURL, metadata)
+		pw, err = tarwriter.MakeTarWriter(ctx, task, input, metadata)
 	case "json":
 		pw = jsonwriter.MakeJSONWriter(ctx, task)
 	default:
-		err = fmt.Errorf("Invalid response format %s", format)
+		err = fmt.Errorf("Invalid response format %s", input.ResponseFormat)
 	}
 	return pw, err
 }
@@ -131,7 +131,7 @@ func processRequest(ctx context.Context,
 	}
 	metadata := map[string]string{"task_url": url}
 
-	pw, err := pwFactory.makePageWriter(ctx, req.Input.ResponseFormat, req.Input.UploadURL, task, metadata)
+	pw, err := pwFactory.makePageWriter(ctx, req.Input, task, metadata)
 	if err != nil {
 		glog.Errorf("Error creating a page writer for type %s, reason %v", req.Input.ResponseFormat, err)
 		return

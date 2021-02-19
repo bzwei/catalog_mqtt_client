@@ -24,7 +24,12 @@ func (m *mockCatalogTask) Update(data map[string]interface{}) error {
 
 func TestWrite(t *testing.T) {
 	task := new(mockCatalogTask)
-	task.On("Update", map[string]interface{}{"state": "running", "status": "ok", "output": &map[string]interface{}{"key1": "val1", "key2": "val2"}}).Return(nil)
+	updateObj := map[string]interface{}{
+		"state":  "running",
+		"status": "ok",
+		"output": &map[string]interface{}{"key1": "val1", "key2": "val2"},
+	}
+	task.On("Update", updateObj).Return(nil)
 	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), "123"), task)
 	err := jwriter.Write("test page", []byte(`{"key1": "val1", "key2": "val2"}`))
 
@@ -42,7 +47,12 @@ func TestWriteError(t *testing.T) {
 
 func TestFlush(t *testing.T) {
 	task := new(mockCatalogTask)
-	task.On("Update", map[string]interface{}{"state": "completed", "status": "ok"}).Return(nil)
+	updateObj := map[string]interface{}{
+		"state":   "completed",
+		"status":  "ok",
+		"message": "Catalog Worker Ended Successfully",
+	}
+	task.On("Update", updateObj).Return(nil)
 	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), "123"), task)
 	err := jwriter.Flush()
 
@@ -52,7 +62,13 @@ func TestFlush(t *testing.T) {
 
 func TestFlushError(t *testing.T) {
 	task := new(mockCatalogTask)
-	task.On("Update", map[string]interface{}{"state": "completed", "status": "error", "output": &map[string]interface{}{"errors": []string{"error 1", "error 2"}}}).Return(nil)
+	updateObj := map[string]interface{}{
+		"state":   "completed",
+		"status":  "error",
+		"output":  &map[string]interface{}{"errors": []string{"error 1", "error 2"}},
+		"message": "Catalog Worker Ended with errors",
+	}
+	task.On("Update", updateObj).Return(nil)
 	jwriter := MakeJSONWriter(logger.CtxWithLoggerID(context.Background(), "123"), task)
 	err := jwriter.FlushErrors([]string{"error 1", "error 2"})
 

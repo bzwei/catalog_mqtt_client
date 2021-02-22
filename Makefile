@@ -15,6 +15,9 @@ LDFLAGS += -X 'github.com/RedHatInsights/rhc-worker-catalog/build.Sha1=${SHA}'
 build:
 	go build -ldflags="${LDFLAGS}" -o ${BINARY} ${SRC_FILES}
 
+vendor:
+	go mod tidy
+	go mod vendor
 test:
 	go test -race -v . ./...
 

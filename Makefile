@@ -16,7 +16,7 @@ BUILD_DATE := $(shell date +%Y-%m-%d\ %H:%M:%S)
 SRC_FILES= main.go
 OTHER_FILES= internal/filters/filters.go \
 	     internal/artifacts/artifacts.go
-PKGNAME=rhc_catalog_worker
+PKGNAME=rhc-catalog-worker
 .DEFAULT_GOAL := build
 ifeq ($(UNAME), Linux)
 TRANSFORM:= --transform s/^\./$(PKGNAME)-$(VERSION)/ 

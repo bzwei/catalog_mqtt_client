@@ -26,7 +26,7 @@ and makes REST API calls to Ansible Tower.
 make VERSION=%{version} SHA=%{commitid}
 
 %install
-mkdir -p %{buildroot}/{etc/rhc/workers,usr/libexec/rhc}
+mkdir -p %{buildroot}/usr/libexec/rhc
 %{__install} -m 755 %{_builddir}/%{name}-%{version}/%{name} %{buildroot}/usr/libexec/rhc
 
 %files

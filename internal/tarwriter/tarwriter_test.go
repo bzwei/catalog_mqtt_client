@@ -71,7 +71,7 @@ func shareFlushTest(t *testing.T, writerObj *tarWriter, output *map[string]inter
 
 	// tar directory removed
 	_, err = os.Stat(writerObj.dir)
-	assert.False(t, os.IsExist(err))
+	assert.True(t, !os.IsExist(err))
 }
 
 func TestWriteAndFlush(t *testing.T) {

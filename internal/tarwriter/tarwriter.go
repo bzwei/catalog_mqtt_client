@@ -55,6 +55,7 @@ func (tw *tarWriter) Write(name string, b []byte) error {
 }
 
 func (tw *tarWriter) Flush() error {
+	defer os.RemoveAll(tw.dir)
 	var statusErrors []string
 	defer func() {
 		if len(statusErrors) > 0 {
@@ -68,6 +69,8 @@ func (tw *tarWriter) Flush() error {
 		statusErrors = append(statusErrors, "Failed to create temp directory for the tar file creation")
 		return err
 	}
+	defer os.RemoveAll(tmpdir)
+
 	fname := filepath.Join(tmpdir, "inventory.tgz")
 	sha, err := tarfiles.TarCompressDirectory(tw.dir, fname)
 	if err != nil {
@@ -87,8 +90,6 @@ func (tw *tarWriter) Flush() error {
 	}
 
 	b, uploadErr := upload.Upload(tw.input.UploadURL, fname, "application/vnd.redhat.catalog.filename+tgz", tw.metadata)
-	os.RemoveAll(tw.dir)
-	os.RemoveAll(tmpdir)
 	if uploadErr != nil {
 		tw.glog.Errorf("Error uploading file %s %v", fname, uploadErr)
 		statusErrors = append(statusErrors, "Failed to upload the tar file")

@@ -55,13 +55,14 @@ func makeConfig() *common.CatalogConfig {
 	config.Token = viper.GetString("ANSIBLE_TOWER.token")
 	config.URL = viper.GetString("ANSIBLE_TOWER.url")
 	config.SkipVerifyCertificate = !viper.GetBool("ANSIBLE_TOWER.verify_ssl")
-	config.Debug = viper.GetBool("logger.debug")
+	config.Level = viper.GetString("logger.level")
 	config.MQTTURL = viper.GetString("MQTT_BROKER.url")
 	config.GUID = viper.GetString("MQTT_BROKER.uuid")
 
 	flag.Parse()
-	if config.Debug {
-		log.SetLevel(log.DebugLevel)
+	level, err := log.ParseLevel(config.Level)
+	if err == nil {
+		log.SetLevel(level)
 	} else {
 		log.SetLevel(log.WarnLevel)
 	}

@@ -21,5 +21,5 @@ x_rh_identity="<<x-rh-identity>>" #dev only
 timeout_minutes=10
 
 [logger]
-debug=true
+level="info"
 logfile="./rhc-worker-catalog" #log file path and name without .log extension

@@ -34,7 +34,7 @@ func TestMain(t *testing.T) {
 	os.Remove(info.Name())
 
 	assert.True(t, info.Size() > 0)
-	assert.True(t, frh.catalogConfig.Debug)
+	assert.Equal(t, "info", frh.catalogConfig.Level)
 	assert.Equal(t, "<<Your Tower URL>>", frh.catalogConfig.URL)
 	assert.Equal(t, "<<Your Tower Token>>", frh.catalogConfig.Token)
 	assert.Equal(t, &towerapiworker.DefaultAPIWorker{}, frh.workHandler)

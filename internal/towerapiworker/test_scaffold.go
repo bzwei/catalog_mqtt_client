@@ -104,7 +104,7 @@ func (ts *testScaffold) base(t *testing.T, jp common.JobParam, responseCode int,
 	ts.terminateResponder = make(chan bool)
 	ts.terminateErrListener = make(chan bool)
 
-	ts.config = &common.CatalogConfig{Debug: false, URL: "https://192.1.1.1", Token: "123", SkipVerifyCertificate: true}
+	ts.config = &common.CatalogConfig{Level: "error", URL: "https://192.1.1.1", Token: "123", SkipVerifyCertificate: true}
 	ts.client = fakeClient(t, responseBody, responseCode)
 	ts.context = logger.CtxWithLoggerID(context.Background(), "123")
 }

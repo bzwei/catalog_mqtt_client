@@ -5,7 +5,7 @@ import "time"
 // CatalogConfig stores the config parameters for the
 // Catalog Worker
 type CatalogConfig struct {
-	Debug                 bool   // Enable extra logging
+	Level                 string // The Log Level
 	URL                   string // The URL to your Ansible Tower
 	Token                 string // The Token used to authenticate with Ansible Tower
 	SkipVerifyCertificate bool   // Skip Certifcate Validation

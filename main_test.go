@@ -39,3 +39,16 @@ func TestMain(t *testing.T) {
 	assert.Equal(t, "<<Your Tower Token>>", frh.catalogConfig.Token)
 	assert.Equal(t, &towerapiworker.DefaultAPIWorker{}, frh.workHandler)
 }
+
+func TestConfigSearchPath(t *testing.T) {
+	assert.Panics(t, func() { initConfig() })
+
+	configFile, err := getConfigFile()
+	assert.NotNil(t, err)
+
+	os.MkdirAll("./rhc/workers", os.ModePerm)
+	os.Create("./rhc/workers/catalog.toml")
+	configFile, err = getConfigFile()
+	assert.Equal(t, "./rhc/workers/catalog.toml", configFile)
+	os.RemoveAll("./rhc/workers")
+}

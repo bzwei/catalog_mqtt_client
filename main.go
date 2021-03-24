@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/user"
 	"path/filepath"
 	"strconv"
 
@@ -30,14 +31,21 @@ func main() {
 
 func initConfig() {
 	var configFilePath string
-	flag.StringVar(&configFilePath, "config", "/etc/rhc/workers/catalog.toml", "location of the config file")
+	var err error
+	flag.StringVar(&configFilePath, "config", "", "location of the config file")
 	flag.Parse()
 
+	if configFilePath == "" {
+		if configFilePath, err = getConfigFile(); err != nil {
+			panic(err)
+		}
+	}
 	dir, file := filepath.Split(configFilePath)
 	viper.SetConfigName(file)
 	viper.SetConfigType("toml")
 	viper.AddConfigPath(dir)
-	if err := viper.ReadInConfig(); err != nil {
+	err = viper.ReadInConfig()
+	if err != nil {
 		panic(fmt.Errorf("Failed to import configuration file %s, reason %v", configFilePath, err))
 	}
 }
@@ -47,6 +55,35 @@ func startRun(config *common.CatalogConfig, rh request.Handler) {
 	log.Infof("Catalog Worker Version %s GIT SHA %s Build %s", build.Version, build.Sha1, build.Build)
 
 	rh.StartHandlingRequests(config, &towerapiworker.DefaultAPIWorker{})
+}
+
+func getConfigFile() (string, error) {
+	for _, filename := range candidateConfigFiles() {
+		if fileExists(filename) {
+			return filename, nil
+		}
+	}
+
+	return "", fmt.Errorf("Cannot find catalog.toml at default locations")
+}
+
+func candidateConfigFiles() []string {
+	var s []string
+	s = append(s, "./rhc/workers/catalog.toml")
+	usr, err := user.Current()
+	if err == nil {
+		s = append(s, fmt.Sprintf("%s/.config/rhc/workers/catalog.toml", usr.HomeDir))
+	}
+	s = append(s, "/etc/rhc/workers/catalog.toml")
+	return s
+}
+
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
 }
 
 func makeConfig() *common.CatalogConfig {
